@@ -87,6 +87,7 @@ void fillAll( uint32_t color )
  * Only count a button press on release, and only if it's been down for a sufficient 
  * amount of time.
  *===============================================*/ 
+
 #define DEBOUNCE_TIME_MS 50
 bool buttonPressed( void )
 {
@@ -149,6 +150,13 @@ void setup()
     delay(1000);
 }
 
+
+/*================================================
+ * colorArrays[]
+ * 
+ * Not currently being used.
+ * Would like to be able to create an array of colors that include the full, medium, and dim for each color
+ *===============================================*/ 
 uint32_t REDcolors[] = 
 { 
   COLOR_RED,
@@ -170,7 +178,11 @@ uint32_t BLUEcolors[] =
   COLOR_BLUE_DIM,
 };
 
-
+/*================================================
+ * setupCylon function called from setup() and perhaps other times
+ * 
+ * Fills the leds based on CYLONSIZE and NUMPIXELS.
+ *===============================================*/ 
 void setupCylon(){
     int i;
     uint32_t led_color=COLOR_RED;
@@ -190,10 +202,17 @@ void setupCylon(){
     }
     showLEDs();
 }
+
+/*================================================
+ * showLEDs() function 
+ * 
+ * Sets the color of cylon based on the cylonColorMode.
+ * Uses the bool cylonMovingRight to determine which side of cylon is bright and which side is faded.
+ * Slows the cylon at the edges of the array of leds.
+ *===============================================*/ 
 void showLEDs(){
    int cylonCounter = 0; // track how many pixels have been lit for fading
 
-   
    if (cylonColorMode == 1)
    {
      cylon_color = COLOR_RED;
@@ -229,8 +248,11 @@ void showLEDs(){
      cylon_color = COLOR_CYAN;
      cylon_color_med = COLOR_CYAN_MED;   
      cylon_color_dim = COLOR_CYAN_DIM;
-   }  
-   
+   } 
+    
+   // fills the cylon based on value of cylonMovingRight
+   // need to improve the math and clean up code that determines what portion of the
+   // cylon is full colr, medium, or dim
    for (int i=0; i < NUMPIXELS; i++)
     {
       if (cylonMovingRight == true && pixelState[i] == CYLON_EYE )
@@ -261,6 +283,8 @@ void showLEDs(){
 
     }
     pixels.show();
+
+    // This section slows the cylon when it is close to the edges of the NUMPIXELS array
     if( pixelState[0] == CYLON_EYE || pixelState[NUMPIXELS-1] == CYLON_EYE)
       delay(cylonDelay*2.5);
     else if
@@ -270,7 +294,13 @@ void showLEDs(){
       delay(cylonDelay);
 }
 
-
+/*================================================
+ * shiftRIGHT function moves the on/off status of the array of leds to the right,
+ * until the far right is on rather than off.
+ * 
+ * After each shift, showLEDs is called, then we check the pot for speed (delay) changes,
+ * and checkButton looks but buttonPressed() to determine cylon color changes.
+ *===============================================*/ 
 void shiftRIGHT(){
   cylonMovingRight = true;
  // Serial.println("RIGHT");
@@ -287,6 +317,9 @@ void shiftRIGHT(){
   }
 }
 
+/*================================================
+ * shiftLEFT function does the same as shiftRIGHT, but moves array to the left instead of right
+ *===============================================*/ 
 void shiftLEFT(){
  // Serial.println("LEFT");
   cylonMovingRight = false;
@@ -303,6 +336,17 @@ void shiftLEFT(){
   }
 }
 
+/*================================================
+ * checkButton function calls buttonPressed() function which uses debouncing to determine if the
+ * button was pressed.
+ * 
+ * Also increments the colors if the button is pressed.
+ * 
+ * Plan to eventually use ellapsedMillis instead of delays in the loop() and other functions.
+ * Would like to implement a long press (2 seconds or more) that puts the array into another mode or
+ * changes another value besides the color of the array. Perhaps this would make the CYLONSIZE bigger.
+ * 
+ *===============================================*/ 
 void checkButton(){
   if (buttonPressed())
   {
@@ -312,10 +356,18 @@ void checkButton(){
   }
 }
 
+/*================================================
+ * checkSpeed() function reads the pot to determine the delay when shifting the cylon back and forth
+ * Eventually may switch from delays to EllapsedMillis to remove blocking calls.
+ *===============================================*/ 
 void checkSpeed(){
   cylonDelay = map (analogRead(POT_PIN),0,1024,5,100);
 }
 
+/*================================================
+ * loop function repeats over and over after setup()
+ * shiftRIGHT() and shiftLEFT() alternate the cylon back and forth
+ *===============================================*/ 
 void loop()
 {
   shiftRIGHT();
