@@ -1,7 +1,6 @@
 /*===========================================================
- * Tiny Stick Flashlight
- *  
- * Test code for the tiny-stick board.  
+ * Tiny Stick Cylon
+ *   
  * Uses button to change LED color.
  * Uses Potentiometer to change brightness.
  */
@@ -11,15 +10,14 @@
 // Which pin to use for DualRingLED control
 #define LED_PIN    3
 
-//#define BUTTON_PIN 0      // Tiny
-#define BUTTON_PIN 8    // Uno
+#define BUTTON_PIN 0      // Tiny
+//#define BUTTON_PIN 8    // Uno
 
-#define NUMPIXELS 96
-#define CYLONSIZEMIN 3
-#define CYLONSIZEMAX 10
+#define NUMPIXELS 8
+#define CYLONSIZE 3
 
-//#define POT_PIN    2   // Tiny
-#define POT_PIN    A0    // Uno
+#define POT_PIN    2   // Tiny
+//#define POT_PIN    A0    // Uno
 
 typedef enum
 {
@@ -31,7 +29,7 @@ cylon_state_type pixelState[NUMPIXELS];
 
 int cylonDelay = 70;
 int cylonIndex = 0;
-int cylonSize = CYLONSIZEMIN;
+int cylonColorMode = 1;
 
 // track direction of cylon right or left to allow for fading trail 
 bool cylonMovingRight = true;
@@ -43,14 +41,32 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, LED_PIN, NEO_GRB+NEO_KHZ
 #define COLOR_RED_DIM 0x1F0000
 
 #define COLOR_GREEN   0x00FF00
+#define COLOR_GREEN_MED 0x003C00
+#define COLOR_GREEN_DIM   0x001F00
+
 #define COLOR_BLUE    0x0000FF
+#define COLOR_BLUE_MED   0x00003C
+#define COLOR_BLUE_DIM  0x00001F
+
 #define COLOR_MAGENTA 0xFF00FF
+#define COLOR_MAGENTA_MED 0x3C003C
+#define COLOR_MAGENTA_DIM 0x1F001F
+
 #define COLOR_YELLOW  0xFFFF00
+#define COLOR_YELLOW_MED  0x3C3C00
+#define COLOR_YELLOW_DIM  0x1F1F00
+
 #define COLOR_CYAN    0x00FFFF
+#define COLOR_CYAN_MED    0x003C3C
+#define COLOR_CYAN_DIM    0x001F1F
+
 #define COLOR_BLACK   0
 #define COLOR_WHITE   0xFFFFFF
 
-
+uint32_t bgrd_color = COLOR_BLACK;
+uint32_t cylon_color = COLOR_RED;
+uint32_t cylon_color_med = COLOR_RED_MED;   
+uint32_t cylon_color_dim = COLOR_RED_DIM;
 
 /*================================================================================
  * fillAll
@@ -64,9 +80,6 @@ void fillAll( uint32_t color )
     pixels.setPixelColor(i, color);
   }
 }
-
-
-
 
 /*================================================
  * Debounce function.
@@ -125,7 +138,7 @@ bool buttonPressed( void )
 
 void setup()
 {
-    #if 1
+    #if 0
     // Uno debug 
     Serial.begin(9600);
     pinMode(BUTTON_PIN,INPUT_PULLUP);
@@ -136,28 +149,42 @@ void setup()
     delay(1000);
 }
 
-uint32_t colors[] = 
+uint32_t REDcolors[] = 
 { 
   COLOR_RED,
-  COLOR_BLUE,
-  COLOR_GREEN,
-  COLOR_WHITE
+  COLOR_RED_MED,
+  COLOR_RED_DIM,
 };
+
+uint32_t GREENcolors[] = 
+{ 
+  COLOR_GREEN,
+  COLOR_GREEN_MED,
+  COLOR_GREEN_DIM,
+};
+
+uint32_t BLUEcolors[] = 
+{ 
+  COLOR_BLUE,
+  COLOR_BLUE_MED,
+  COLOR_BLUE_DIM,
+};
+
 
 void setupCylon(){
     int i;
     uint32_t led_color=COLOR_RED;
     for (int i=0; i < NUMPIXELS; i++)
     {
-      if (i < cylonSize)
+      if (i < CYLONSIZE)
       {
          pixelState[i] = CYLON_EYE;
-         pixels.setPixelColor(i,led_color);
+   //      pixels.setPixelColor(i,led_color);
       }
       else
       {
          pixelState[i] = CYLON_BACKGROUND; 
-         pixels.setPixelColor(i,0);
+    //     pixels.setPixelColor(i,0);
       }    
       //pixels.show();
     }
@@ -165,11 +192,45 @@ void setupCylon(){
 }
 void showLEDs(){
    int cylonCounter = 0; // track how many pixels have been lit for fading
+
    
-   uint32_t cylon_color = COLOR_RED;
-   uint32_t cylon_color_med = COLOR_RED_MED;   
-   uint32_t cylon_color_dim = COLOR_RED_DIM;
-   uint32_t bgrd_color = COLOR_BLACK;
+   if (cylonColorMode == 1)
+   {
+     cylon_color = COLOR_RED;
+     cylon_color_med = COLOR_RED_MED;   
+     cylon_color_dim = COLOR_RED_DIM;
+   }
+   else if (cylonColorMode == 2)
+   {
+     cylon_color = COLOR_GREEN;
+     cylon_color_med = COLOR_GREEN_MED;   
+     cylon_color_dim = COLOR_GREEN_DIM;
+   }
+   else if (cylonColorMode == 3)
+   {
+     cylon_color = COLOR_BLUE;
+     cylon_color_med = COLOR_BLUE_MED;   
+     cylon_color_dim = COLOR_BLUE_DIM;
+   }
+   else if (cylonColorMode == 4)
+   {
+     cylon_color = COLOR_MAGENTA;
+     cylon_color_med = COLOR_MAGENTA_MED;   
+     cylon_color_dim = COLOR_MAGENTA_DIM;
+   }  
+   else if (cylonColorMode == 5)
+   {
+     cylon_color = COLOR_YELLOW;
+     cylon_color_med = COLOR_YELLOW_MED;   
+     cylon_color_dim = COLOR_YELLOW_DIM;
+   }   
+   else if (cylonColorMode == 6)
+   {
+     cylon_color = COLOR_CYAN;
+     cylon_color_med = COLOR_CYAN_MED;   
+     cylon_color_dim = COLOR_CYAN_DIM;
+   }  
+   
    for (int i=0; i < NUMPIXELS; i++)
     {
       if (cylonMovingRight == true && pixelState[i] == CYLON_EYE )
@@ -185,9 +246,9 @@ void showLEDs(){
       }
       else if (cylonMovingRight == false && pixelState[i] == CYLON_EYE)
       {
-        if (cylonSize - cylonCounter > 3)
+        if (CYLONSIZE - cylonCounter > 3)
           pixels.setPixelColor(i,cylon_color);
-        else if (cylonSize - cylonCounter >= 2)
+        else if (CYLONSIZE - cylonCounter >= 2)
           pixels.setPixelColor(i,cylon_color_med);   
         else
           pixels.setPixelColor(i,cylon_color_dim);   
@@ -243,14 +304,11 @@ void shiftLEFT(){
 }
 
 void checkButton(){
-    if (buttonPressed())
+  if (buttonPressed())
   {
-    cylonSize++;
-    if (cylonSize > CYLONSIZEMAX)
-      cylonSize = CYLONSIZEMIN;
-    Serial.print("cylonSize = ");
-    Serial.println(cylonSize);
-    setupCylon();
+     cylonColorMode++;
+     if (cylonColorMode > 6)
+        cylonColorMode = 1;
   }
 }
 

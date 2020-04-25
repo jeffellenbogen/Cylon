@@ -1,7 +1,6 @@
 /*===========================================================
- * Tiny Stick Flashlight
- *  
- * Test code for the tiny-stick board.  
+ * Tiny Stick Cylon testing version on Uno with 96 PIXEL Strip
+ *   
  * Uses button to change LED color.
  * Uses Potentiometer to change brightness.
  */
