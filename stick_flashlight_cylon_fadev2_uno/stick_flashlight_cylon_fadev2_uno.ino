@@ -139,7 +139,7 @@ bool buttonPressed( void )
 
 void setup()
 {
-    #if 0
+    #if 1
     // Uno debug 
     Serial.begin(9600);
     pinMode(BUTTON_PIN,INPUT_PULLUP);
@@ -379,6 +379,9 @@ void checkButton(){
      cylonColorMode++;
      if (cylonColorMode > 8)
         cylonColorMode = 1;
+
+     Serial.print("colorMode = ");
+     Serial.println(cylonColorMode);
   }
 }
 
