@@ -248,6 +248,18 @@ void showLEDs(){
      cylon_color = COLOR_CYAN;
      cylon_color_med = COLOR_CYAN_MED;   
      cylon_color_dim = COLOR_CYAN_DIM;
+   }   
+   else if (cylonColorMode == 7)
+   {
+     cylon_color = COLOR_RED;
+     cylon_color_med = COLOR_MAGENTA_MED;   
+     cylon_color_dim = COLOR_CYAN_DIM;
+   } 
+   else if (cylonColorMode == 8)
+   {
+     cylon_color = COLOR_GREEN;
+     cylon_color_med = COLOR_YELLOW_MED;   
+     cylon_color_dim = COLOR_RED_DIM;
    } 
     
    // fills the cylon based on value of cylonMovingRight
@@ -351,7 +363,7 @@ void checkButton(){
   if (buttonPressed())
   {
      cylonColorMode++;
-     if (cylonColorMode > 6)
+     if (cylonColorMode > 8)
         cylonColorMode = 1;
   }
 }
@@ -361,7 +373,7 @@ void checkButton(){
  * Eventually may switch from delays to EllapsedMillis to remove blocking calls.
  *===============================================*/ 
 void checkSpeed(){
-  cylonDelay = map (analogRead(POT_PIN),0,1024,5,100);
+  cylonDelay = map (analogRead(POT_PIN),0,1024,1,150);
 }
 
 /*================================================
