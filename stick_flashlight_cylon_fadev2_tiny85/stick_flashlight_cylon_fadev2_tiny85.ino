@@ -1,5 +1,6 @@
+
 /*===========================================================
- * Tiny Stick Cylon
+ * Tiny Stick Cylon - table driven example.
  *   
  * Uses button to change LED color.
  * Uses Potentiometer to change brightness.
@@ -64,9 +65,27 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, LED_PIN, NEO_GRB+NEO_KHZ
 #define COLOR_WHITE   0xFFFFFF
 
 uint32_t bgrd_color = COLOR_BLACK;
-uint32_t cylon_color = COLOR_RED;
-uint32_t cylon_color_med = COLOR_RED_MED;   
-uint32_t cylon_color_dim = COLOR_RED_DIM;
+
+typedef struct
+{
+  uint32_t bright;
+  uint32_t med;
+  uint32_t dim;
+} cylon_palette_type;
+
+cylon_palette_type cylon_palette[]=
+{
+  // bright        med                dim
+  {COLOR_RED,     COLOR_RED_MED,     COLOR_RED_DIM},      // mode 0...currently unused as logic is "1" based
+  {COLOR_RED,     COLOR_RED_MED,     COLOR_RED_DIM},      // mode 1
+  {COLOR_GREEN,   COLOR_GREEN_MED,   COLOR_GREEN_DIM},    // mode 2
+  {COLOR_BLUE,    COLOR_BLUE_MED,    COLOR_BLUE_DIM},     // mode 3
+  {COLOR_MAGENTA, COLOR_MAGENTA_MED, COLOR_MAGENTA_DIM},  // mode 4
+  {COLOR_YELLOW,  COLOR_YELLOW_MED,  COLOR_YELLOW_DIM},   // mode 5
+  {COLOR_CYAN,    COLOR_CYAN_MED,    COLOR_CYAN_DIM},     // mode 6
+  {COLOR_RED,     COLOR_MAGENTA_MED, COLOR_CYAN_DIM},     // mode 7
+  {COLOR_GREEN,   COLOR_YELLOW_MED,  COLOR_RED_DIM}       // mode 8
+};
 
 /*================================================================================
  * fillAll
@@ -211,55 +230,18 @@ void setupCylon(){
  * Slows the cylon at the edges of the array of leds.
  *===============================================*/ 
 void showLEDs(){
-//fill colors based on cylonColorMode below
-   if (cylonColorMode == 1)
-   {
-     cylon_color = COLOR_RED;
-     cylon_color_med = COLOR_RED_MED;   
-     cylon_color_dim = COLOR_RED_DIM;
-   }
-   else if (cylonColorMode == 2)
-   {
-     cylon_color = COLOR_GREEN;
-     cylon_color_med = COLOR_GREEN_MED;   
-     cylon_color_dim = COLOR_GREEN_DIM;
-   }
-   else if (cylonColorMode == 3)
-   {
-     cylon_color = COLOR_BLUE;
-     cylon_color_med = COLOR_BLUE_MED;   
-     cylon_color_dim = COLOR_BLUE_DIM;
-   }
-   else if (cylonColorMode == 4)
-   {
-     cylon_color = COLOR_MAGENTA;
-     cylon_color_med = COLOR_MAGENTA_MED;   
-     cylon_color_dim = COLOR_MAGENTA_DIM;
-   }  
-   else if (cylonColorMode == 5)
-   {
-     cylon_color = COLOR_YELLOW;
-     cylon_color_med = COLOR_YELLOW_MED;   
-     cylon_color_dim = COLOR_YELLOW_DIM;
-   }   
-   else if (cylonColorMode == 6)
-   {
-     cylon_color = COLOR_CYAN;
-     cylon_color_med = COLOR_CYAN_MED;   
-     cylon_color_dim = COLOR_CYAN_DIM;
-   }   
-   else if (cylonColorMode == 7)
-   {
-     cylon_color = COLOR_RED;
-     cylon_color_med = COLOR_MAGENTA_MED;   
-     cylon_color_dim = COLOR_CYAN_DIM;
-   } 
-   else if (cylonColorMode == 8)
-   {
-     cylon_color = COLOR_GREEN;
-     cylon_color_med = COLOR_YELLOW_MED;   
-     cylon_color_dim = COLOR_RED_DIM;
-   } 
+  cylon_palette_type palette;
+  
+  uint32_t cylon_color;
+  uint32_t cylon_color_med;
+  uint32_t cylon_color_dim;
+
+  /* set our current cylon "palette" */
+  palette = cylon_palette[cylonColorMode];
+  cylon_color = palette.bright;
+  cylon_color_med = palette.med;
+  cylon_color_dim = palette.dim;
+  
     
    // fills the cylon based on value of cylonMovingRight
    // need to improve the math and clean up code that determines what portion of the
