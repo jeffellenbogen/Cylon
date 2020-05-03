@@ -273,17 +273,19 @@ void moveLEDs(){
 
   curr_time_ms = millis();
 
-  /* cylon is NOT at an Edge - and enough time hasn't passed before updating, just return.  */
-  if ((cylonHeadAtEdge == false) && (last_update_time_ms + cylonDelay > curr_time_ms))
+ 
+  /* cylon IS at an Edge - triple the time before updating */   
+  if ((cylonHeadAtEdge == true) && (last_update_time_ms + 5 * cylonDelay > curr_time_ms))
   {
     return;
   }
 
-  /* cylon IS at an Edge - triple the time before updating */
-  else if ((cylonHeadAtEdge == true) && (last_update_time_ms + 3 * cylonDelay > curr_time_ms))
+ /* cylon is NOT at an Edge - and enough time hasn't passed before updating, just return.  */
+  else if ((cylonHeadAtEdge == false) && (last_update_time_ms + cylonDelay > curr_time_ms))
   {
     return;
   }
+
 
   last_update_time_ms = curr_time_ms;
   
