@@ -300,8 +300,7 @@ void moveLEDs(){
         pixelState[i]=pixelState[i-1];
       }
       pixelState[0]=0; // fill the far left spot with background or empty
-    }
-   
+    } 
   }
   else // cylon is moving left
   {
@@ -393,16 +392,16 @@ void checkButton(){
  *===============================================*/ 
 void checkSpeed(){
   int pot_val;
-  int edgeDelayMultiplier = 5;
+  int edgeDelayMultiplier = 2;
   pot_val = analogRead(POT_PIN);
   cylonDelay = map (pot_val,0,1024,CYLON_MAX_DELAY,CYLON_MIN_DELAY); //pot is backwards, so swap MAX and MIN to have faster delay when turned to the right
   cylonDelay = constrain(cylonDelay,CYLON_MIN_DELAY,CYLON_MAX_DELAY);
   
   //multiply delay by edgeDelayMultiplier if cylon is at an edge to slow it momentarily.
-  if (cylonHeadAtEdge == true)
+  if (pixelState[0] == 1 || pixelState[NUMPIXELS - 1] == 1 )
     {
     cylonDelay = cylonDelay * edgeDelayMultiplier;
-    delay(1000);
+
     }
 }
 
