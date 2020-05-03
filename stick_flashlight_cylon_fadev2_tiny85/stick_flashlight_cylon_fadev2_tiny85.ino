@@ -28,6 +28,9 @@ typedef enum
 
 cylon_state_type pixelState[NUMPIXELS];
 
+#define CYLON_MIN_DELAY 10
+#define CYLON_MAX_DELAY 1000
+
 int cylonDelay = 70;
 int cylonIndex = 0;
 int cylonColorMode = 1;
@@ -174,33 +177,6 @@ void setup()
 
 
 /*================================================
- * colorArrays[]
- * 
- * Not currently being used.
- * Would like to be able to create an array of colors that include the full, medium, and dim for each color
- *===============================================*/ 
-uint32_t REDcolors[] = 
-{ 
-  COLOR_RED,
-  COLOR_RED_MED,
-  COLOR_RED_DIM,
-};
-
-uint32_t GREENcolors[] = 
-{ 
-  COLOR_GREEN,
-  COLOR_GREEN_MED,
-  COLOR_GREEN_DIM,
-};
-
-uint32_t BLUEcolors[] = 
-{ 
-  COLOR_BLUE,
-  COLOR_BLUE_MED,
-  COLOR_BLUE_DIM,
-};
-
-/*================================================
  * setupCylon function called from setup() and perhaps other times
  * 
  * Fills the leds based on CYLONSIZE and NUMPIXELS.
@@ -242,7 +218,6 @@ void showLEDs(){
   cylon_color_med = palette.med;
   cylon_color_dim = palette.dim;
   
-    
    // fills the cylon based on value of cylonMovingRight
    // need to improve the math and clean up code that determines what portion of the
    // cylon is full colr, medium, or dim
@@ -286,26 +261,67 @@ void showLEDs(){
       {
         pixels.setPixelColor(i,bgrd_color);
       }
-
     }
-    pixels.show();
-
-    // This section slows the cylon when it is at the edges of the NUMPIXELS array
-    if( pixelState[0] == CYLON_EYE || pixelState[NUMPIXELS-1] == CYLON_EYE)
-      delay(cylonDelay*2.8);
-    // This section slows the cylon when it is close to the edges of the NUMPIXELS array
-    else if
-      ( pixelState[1] == CYLON_EYE || pixelState[NUMPIXELS-2] == CYLON_EYE)
-      delay(cylonDelay*2);
-    // This section slows the cylon the base cylonDelay amount when NOT at the edges of the array
-    else
-      delay(cylonDelay);
+    pixels.show();    
 }
 
 void moveLEDs(){
-  shiftRIGHT();
-  shiftLEFT();
+
+  static uint32_t last_update_time_ms = 0;
+  uint32_t        curr_time_ms;
+
+  curr_time_ms = millis();
+
+  /* if it hasn't been long enough for an update, just return.  */
+  if (last_update_time_ms + cylonDelay > curr_time_ms)
+  {
+    return;
+  }
+
+  last_update_time_ms = curr_time_ms;
+  
+  if (cylonMovingRight == true)
+  {
+    if(cylonHeadAtEdge) // if at the edge switch direction to move left
+    {
+      cylonMovingRight = false;
+    }
+    else // move all pixels one spot to the right
+    {
+      for (int i = NUMPIXELS - 1; i > 0; i--)
+      {
+        pixelState[i]=pixelState[i-1];
+      }
+      pixelState[0]=0; // fill the far left spot with background or empty
+    }
+    
+    if (pixelState[NUMPIXELS - 1] == 1) // check to see if far right spot is now cylon head
+      cylonHeadAtEdge = true;
+    else
+      cylonHeadAtEdge = false;
+  }
+  else // cylon is moving left
+  {
+    if(cylonHeadAtEdge)
+    {
+      cylonMovingRight = true;
+    }
+    else
+    {
+      for (int i = 0; i < NUMPIXELS - 1; i++)
+      {
+        pixelState[i]=pixelState[i+1];
+      }
+      pixelState[NUMPIXELS - 1]=0;
+    }
+       
+    if (pixelState[0] == 1) // check to see if far left spot is now cylon head
+      cylonHeadAtEdge = true;
+    else
+      cylonHeadAtEdge = false;
+  }
 }
+
 /*================================================
  * shiftRIGHT function moves the on/off status of the array of leds to the right,
  * until the far right is on rather than off.
@@ -313,6 +329,8 @@ void moveLEDs(){
  * After each shift, showLEDs is called, then we check the pot for speed (delay) changes,
  * and checkButton looks but buttonPressed() to determine cylon color changes.
  *===============================================*/ 
+ 
+/*
 void shiftRIGHT(){
   cylonMovingRight = true;
  // Serial.println("RIGHT");
@@ -323,15 +341,16 @@ void shiftRIGHT(){
       pixelState[i]=pixelState[i-1];
     }
     pixelState[0]=0;
-    showLEDs();
-    checkSpeed();
-    checkButton();
   }
 }
+*/
+
 
 /*================================================
  * shiftLEFT function does the same as shiftRIGHT, but moves array to the left instead of right
  *===============================================*/ 
+ 
+/*
 void shiftLEFT(){
  // Serial.println("LEFT");
   cylonMovingRight = false;
@@ -342,11 +361,9 @@ void shiftLEFT(){
       pixelState[i]=pixelState[i+1];
     }
     pixelState[NUMPIXELS - 1]=0;
-    showLEDs();
-    checkSpeed();
-    checkButton();
   }
 }
+*/
 
 /*================================================
  * checkButton function calls buttonPressed() function which uses debouncing to determine if the
@@ -373,7 +390,10 @@ void checkButton(){
  * Eventually may switch from delays to EllapsedMillis to remove blocking calls.
  *===============================================*/ 
 void checkSpeed(){
-  cylonDelay = map (analogRead(POT_PIN),0,1024,150,1);
+  int pot_val;
+  pot_val = analogRead(POT_PIN);
+  cylonDelay = map (pot_val,0,1024,CYLON_MAX_DELAY,CYLON_MIN_DELAY);
+  cylonDelay = constrain(cylonDelay,CYLON_MAX_DELAY,CYLON_MIN_DELAY);
 }
 
 /*================================================
@@ -382,8 +402,8 @@ void checkSpeed(){
  *===============================================*/ 
 void loop()
 { 
-  checkButton();
-  checkSpeed();
-  showLEDs();
   moveLEDs();
+  showLEDs();
+  checkSpeed();
+  checkButton();
 }
