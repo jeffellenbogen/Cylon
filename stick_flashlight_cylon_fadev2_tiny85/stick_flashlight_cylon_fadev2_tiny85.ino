@@ -15,7 +15,7 @@
 //#define BUTTON_PIN 8    // Uno
 
 #define NUMPIXELS 8
-#define CYLONSIZE 3
+#define CYLONSIZE 4
 
 #define POT_PIN    2   // Tiny
 //#define POT_PIN    A0    // Uno
@@ -287,11 +287,12 @@ void moveLEDs(){
   {
     if (pixelState[NUMPIXELS - 1] == 1) // check to see if far right spot is  cylon head
       cylonHeadAtEdge = true;
+    else
+      cylonHeadAtEdge = false;
       
     if(cylonHeadAtEdge == true) // if at the edge switch direction to move left
     {
       cylonMovingRight = false;
-      cylonHeadAtEdge = false;
     }
     else // move all pixels one spot to the right
     {
@@ -306,11 +307,12 @@ void moveLEDs(){
   {
      if (pixelState[0] == 1) // check to see if far left spot is now cylon head
       cylonHeadAtEdge = true;
-
+     else 
+      cylonHeadAtEdge = false;
+      
     if(cylonHeadAtEdge == true)
     {
       cylonMovingRight = true;
-      cylonHeadAtEdge = false;
     }
     else
     {
@@ -392,16 +394,15 @@ void checkButton(){
  *===============================================*/ 
 void checkSpeed(){
   int pot_val;
-  int edgeDelayMultiplier = 2;
+  int edgeDelayMultiplier = 1.80;
   pot_val = analogRead(POT_PIN);
   cylonDelay = map (pot_val,0,1024,CYLON_MAX_DELAY,CYLON_MIN_DELAY); //pot is backwards, so swap MAX and MIN to have faster delay when turned to the right
   cylonDelay = constrain(cylonDelay,CYLON_MIN_DELAY,CYLON_MAX_DELAY);
   
   //multiply delay by edgeDelayMultiplier if cylon is at an edge to slow it momentarily.
-  if (pixelState[0] == 1 || pixelState[NUMPIXELS - 1] == 1 )
+  if (cylonHeadAtEdge == true)
     {
     cylonDelay = cylonDelay * edgeDelayMultiplier;
-
     }
 }
 
