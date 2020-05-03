@@ -90,7 +90,8 @@ cylon_palette_type cylon_palette[]=
   {COLOR_YELLOW,  COLOR_YELLOW_MED,  COLOR_YELLOW_DIM},   // mode 5
   {COLOR_CYAN,    COLOR_CYAN_MED,    COLOR_CYAN_DIM},     // mode 6
   {COLOR_RED,     COLOR_MAGENTA_MED, COLOR_CYAN_DIM},     // mode 7
-  {COLOR_GREEN,   COLOR_YELLOW_MED,  COLOR_RED_DIM}       // mode 8
+  {COLOR_GREEN,   COLOR_YELLOW_MED,  COLOR_RED_DIM},      // mode 8
+  {COLOR_BLUE,   COLOR_CYAN_MED,  COLOR_GREEN_DIM}       // mode 9
 };
 
 /*================================================================================
@@ -279,7 +280,7 @@ void moveLEDs(){
   }
 
   /* cylon IS at an Edge - triple the time before updating */
-  if ((cylonHeadAtEdge == true) && (last_update_time_ms + 3 * cylonDelay > curr_time_ms))
+  else if ((cylonHeadAtEdge == true) && (last_update_time_ms + 3 * cylonDelay > curr_time_ms))
   {
     return;
   }
@@ -385,7 +386,7 @@ void checkButton(){
   if (buttonPressed())
   {
      cylonColorMode++;
-     if (cylonColorMode > 8)
+     if (cylonColorMode > 9)
         cylonColorMode = 1;
   }
 }
@@ -397,7 +398,7 @@ void checkButton(){
 void checkSpeed(){
   int pot_val;
   pot_val = analogRead(POT_PIN);
-  cylonDelay = map (pot_val,0,1024,CYLON_MAX_DELAY,CYLON_MIN_DELAY);
+  cylonDelay = map (pot_val,0,1024,CYLON_MAX_DELAY,CYLON_MIN_DELAY); //pot is backwards, so swap MAX and MIN to have faster delay when turned to the right
   cylonDelay = constrain(cylonDelay,CYLON_MIN_DELAY,CYLON_MAX_DELAY);
 }
 
