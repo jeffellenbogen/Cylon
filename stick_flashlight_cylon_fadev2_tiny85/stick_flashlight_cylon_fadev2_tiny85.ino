@@ -302,6 +302,10 @@ void showLEDs(){
       delay(cylonDelay);
 }
 
+void moveLEDs(){
+  shiftRIGHT();
+  shiftLEFT();
+}
 /*================================================
  * shiftRIGHT function moves the on/off status of the array of leds to the right,
  * until the far right is on rather than off.
@@ -377,7 +381,9 @@ void checkSpeed(){
  * shiftRIGHT() and shiftLEFT() alternate the cylon back and forth
  *===============================================*/ 
 void loop()
-{
-  shiftRIGHT();
-  shiftLEFT();
+{ 
+  checkButton();
+  checkSpeed();
+  showLEDs();
+  moveLEDs();
 }
