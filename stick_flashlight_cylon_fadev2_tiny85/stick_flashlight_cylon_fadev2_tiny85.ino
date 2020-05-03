@@ -38,7 +38,7 @@ int cylonColorMode = 1;
 // track direction of cylon right or left to allow for fading trail 
 bool cylonMovingRight = true;
 
-// track position of cylon head in relation to edge of LED strip so we can pause longer at edges
+// track position of cylon head in relation to edge of LED strip so we can pause longer at edges and know when to turn around
 bool cylonHeadAtEdge = false;
 
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, LED_PIN, NEO_GRB+NEO_KHZ800);
@@ -272,8 +272,14 @@ void moveLEDs(){
 
   curr_time_ms = millis();
 
-  /* if it hasn't been long enough for an update, just return.  */
-  if (last_update_time_ms + cylonDelay > curr_time_ms)
+  /* cylon is NOT at an Edge - and enough time hasn't passed before updating, just return.  */
+  if ((cylonHeadAtEdge == false) && (last_update_time_ms + cylonDelay > curr_time_ms))
+  {
+    return;
+  }
+
+  /* cylon IS at an Edge - triple the time before updating */
+  if ((cylonHeadAtEdge == true) && (last_update_time_ms + 3 * cylonDelay > curr_time_ms))
   {
     return;
   }
@@ -282,9 +288,13 @@ void moveLEDs(){
   
   if (cylonMovingRight == true)
   {
-    if(cylonHeadAtEdge) // if at the edge switch direction to move left
+    if (pixelState[NUMPIXELS - 1] == 1) // check to see if far right spot is  cylon head
+      cylonHeadAtEdge = true;
+      
+    if(cylonHeadAtEdge == true) // if at the edge switch direction to move left
     {
       cylonMovingRight = false;
+      cylonHeadAtEdge = false;
     }
     else // move all pixels one spot to the right
     {
@@ -294,17 +304,17 @@ void moveLEDs(){
       }
       pixelState[0]=0; // fill the far left spot with background or empty
     }
-    
-    if (pixelState[NUMPIXELS - 1] == 1) // check to see if far right spot is now cylon head
-      cylonHeadAtEdge = true;
-    else
-      cylonHeadAtEdge = false;
+   
   }
   else // cylon is moving left
   {
-    if(cylonHeadAtEdge)
+     if (pixelState[0] == 1) // check to see if far left spot is now cylon head
+      cylonHeadAtEdge = true;
+
+    if(cylonHeadAtEdge == true)
     {
       cylonMovingRight = true;
+      cylonHeadAtEdge = false;
     }
     else
     {
@@ -314,11 +324,6 @@ void moveLEDs(){
       }
       pixelState[NUMPIXELS - 1]=0;
     }
-       
-    if (pixelState[0] == 1) // check to see if far left spot is now cylon head
-      cylonHeadAtEdge = true;
-    else
-      cylonHeadAtEdge = false;
   }
 }
 
@@ -393,7 +398,7 @@ void checkSpeed(){
   int pot_val;
   pot_val = analogRead(POT_PIN);
   cylonDelay = map (pot_val,0,1024,CYLON_MAX_DELAY,CYLON_MIN_DELAY);
-  cylonDelay = constrain(cylonDelay,CYLON_MAX_DELAY,CYLON_MIN_DELAY);
+  cylonDelay = constrain(cylonDelay,CYLON_MIN_DELAY,CYLON_MAX_DELAY);
 }
 
 /*================================================
