@@ -273,15 +273,9 @@ void moveLEDs(){
 
   curr_time_ms = millis();
 
- 
-  /* cylon IS at an Edge - triple the time before updating */   
-  if ((cylonHeadAtEdge == true) && (last_update_time_ms + 5 * cylonDelay > curr_time_ms))
-  {
-    return;
-  }
 
- /* cylon is NOT at an Edge - and enough time hasn't passed before updating, just return.  */
-  else if ((cylonHeadAtEdge == false) && (last_update_time_ms + cylonDelay > curr_time_ms))
+ /* If enough time hasn't passed before updating, just return.  */
+  if (last_update_time_ms + cylonDelay > curr_time_ms)
   {
     return;
   }
@@ -399,9 +393,17 @@ void checkButton(){
  *===============================================*/ 
 void checkSpeed(){
   int pot_val;
+  int edgeDelayMultiplier = 5;
   pot_val = analogRead(POT_PIN);
   cylonDelay = map (pot_val,0,1024,CYLON_MAX_DELAY,CYLON_MIN_DELAY); //pot is backwards, so swap MAX and MIN to have faster delay when turned to the right
   cylonDelay = constrain(cylonDelay,CYLON_MIN_DELAY,CYLON_MAX_DELAY);
+  
+  //multiple delay by edgeDelayMultiplier if cylon is at an edge to slow it momentarily.
+  if (cylonHeadAtEdge == true)
+    {
+    cylonDelay = cylonDelay * edgeDelayMultiplier;
+    delay(1000);
+    }
 }
 
 /*================================================
