@@ -35,6 +35,9 @@ int cylonColorMode = 1;
 // track direction of cylon right or left to allow for fading trail 
 bool cylonMovingRight = true;
 
+// track position of cylon head in relation to edge of LED strip so we can pause longer at edges
+bool cylonHeadAtEdge = false;
+
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, LED_PIN, NEO_GRB+NEO_KHZ800);
 
 #define COLOR_RED     0xFF0000
@@ -210,14 +213,11 @@ void setupCylon(){
       if (i < CYLONSIZE)
       {
          pixelState[i] = CYLON_EYE;
-   //      pixels.setPixelColor(i,led_color);
       }
       else
       {
          pixelState[i] = CYLON_BACKGROUND; 
-    //     pixels.setPixelColor(i,0);
       }    
-      //pixels.show();
     }
     showLEDs();
 }
