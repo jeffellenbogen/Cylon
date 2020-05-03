@@ -398,7 +398,7 @@ void checkSpeed(){
   cylonDelay = map (pot_val,0,1024,CYLON_MAX_DELAY,CYLON_MIN_DELAY); //pot is backwards, so swap MAX and MIN to have faster delay when turned to the right
   cylonDelay = constrain(cylonDelay,CYLON_MIN_DELAY,CYLON_MAX_DELAY);
   
-  //multiple delay by edgeDelayMultiplier if cylon is at an edge to slow it momentarily.
+  //multiply delay by edgeDelayMultiplier if cylon is at an edge to slow it momentarily.
   if (cylonHeadAtEdge == true)
     {
     cylonDelay = cylonDelay * edgeDelayMultiplier;
