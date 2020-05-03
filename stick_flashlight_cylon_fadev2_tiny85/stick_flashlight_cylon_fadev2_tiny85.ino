@@ -30,8 +30,8 @@ cylon_state_type pixelState[NUMPIXELS];
 
 #define CYLON_MIN_DELAY 10
 #define CYLON_MAX_DELAY 1000
+int cylonDelay;
 
-int cylonDelay = 70;
 int cylonIndex = 0;
 int cylonColorMode = 1;
 
