@@ -1,5 +1,6 @@
+
 /*===========================================================
- * Tiny Stick Cylon
+ * Tiny Stick Cylon - table driven example.
  *   
  * Uses button to change LED color.
  * Uses Potentiometer to change brightness.
@@ -7,14 +8,14 @@
 
 #include <Adafruit_NeoPixel.h>
 
-// Which pin to use for DualRingLED control
+// Which pin to use for LED control
 #define LED_PIN    3
 
 #define BUTTON_PIN 0      // Tiny
 //#define BUTTON_PIN 8    // Uno
 
 #define NUMPIXELS 8
-#define CYLONSIZE 3
+#define CYLONSIZE 4
 
 #define POT_PIN    2   // Tiny
 //#define POT_PIN    A0    // Uno
@@ -27,12 +28,18 @@ typedef enum
 
 cylon_state_type pixelState[NUMPIXELS];
 
-int cylonDelay = 70;
+#define CYLON_MIN_DELAY 10
+#define CYLON_MAX_DELAY 1000
+int cylonDelay;
+
 int cylonIndex = 0;
 int cylonColorMode = 1;
 
 // track direction of cylon right or left to allow for fading trail 
 bool cylonMovingRight = true;
+
+// track position of cylon head in relation to edge of LED strip so we can pause longer at edges and know when to turn around
+bool cylonHeadAtEdge = false;
 
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, LED_PIN, NEO_GRB+NEO_KHZ800);
 
@@ -64,9 +71,28 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, LED_PIN, NEO_GRB+NEO_KHZ
 #define COLOR_WHITE   0xFFFFFF
 
 uint32_t bgrd_color = COLOR_BLACK;
-uint32_t cylon_color = COLOR_RED;
-uint32_t cylon_color_med = COLOR_RED_MED;   
-uint32_t cylon_color_dim = COLOR_RED_DIM;
+
+typedef struct
+{
+  uint32_t bright;
+  uint32_t med;
+  uint32_t dim;
+} cylon_palette_type;
+
+cylon_palette_type cylon_palette[]=
+{
+  // bright        med                dim
+  {COLOR_RED,     COLOR_RED_MED,     COLOR_RED_DIM},      // mode 0...currently unused as logic is "1" based
+  {COLOR_RED,     COLOR_RED_MED,     COLOR_RED_DIM},      // mode 1
+  {COLOR_GREEN,   COLOR_GREEN_MED,   COLOR_GREEN_DIM},    // mode 2
+  {COLOR_BLUE,    COLOR_BLUE_MED,    COLOR_BLUE_DIM},     // mode 3
+  {COLOR_MAGENTA, COLOR_MAGENTA_MED, COLOR_MAGENTA_DIM},  // mode 4
+  {COLOR_YELLOW,  COLOR_YELLOW_MED,  COLOR_YELLOW_DIM},   // mode 5
+  {COLOR_CYAN,    COLOR_CYAN_MED,    COLOR_CYAN_DIM},     // mode 6
+  {COLOR_RED,     COLOR_MAGENTA_MED, COLOR_CYAN_DIM},     // mode 7
+  {COLOR_GREEN,   COLOR_YELLOW_MED,  COLOR_RED_DIM},      // mode 8
+  {COLOR_BLUE,   COLOR_CYAN_MED,  COLOR_GREEN_DIM}       // mode 9
+};
 
 /*================================================================================
  * fillAll
@@ -152,33 +178,6 @@ void setup()
 
 
 /*================================================
- * colorArrays[]
- * 
- * Not currently being used.
- * Would like to be able to create an array of colors that include the full, medium, and dim for each color
- *===============================================*/ 
-uint32_t REDcolors[] = 
-{ 
-  COLOR_RED,
-  COLOR_RED_MED,
-  COLOR_RED_DIM,
-};
-
-uint32_t GREENcolors[] = 
-{ 
-  COLOR_GREEN,
-  COLOR_GREEN_MED,
-  COLOR_GREEN_DIM,
-};
-
-uint32_t BLUEcolors[] = 
-{ 
-  COLOR_BLUE,
-  COLOR_BLUE_MED,
-  COLOR_BLUE_DIM,
-};
-
-/*================================================
  * setupCylon function called from setup() and perhaps other times
  * 
  * Fills the leds based on CYLONSIZE and NUMPIXELS.
@@ -191,14 +190,11 @@ void setupCylon(){
       if (i < CYLONSIZE)
       {
          pixelState[i] = CYLON_EYE;
-   //      pixels.setPixelColor(i,led_color);
       }
       else
       {
          pixelState[i] = CYLON_BACKGROUND; 
-    //     pixels.setPixelColor(i,0);
       }    
-      //pixels.show();
     }
     showLEDs();
 }
@@ -211,56 +207,18 @@ void setupCylon(){
  * Slows the cylon at the edges of the array of leds.
  *===============================================*/ 
 void showLEDs(){
-//fill colors based on cylonColorMode below
-   if (cylonColorMode == 1)
-   {
-     cylon_color = COLOR_RED;
-     cylon_color_med = COLOR_RED_MED;   
-     cylon_color_dim = COLOR_RED_DIM;
-   }
-   else if (cylonColorMode == 2)
-   {
-     cylon_color = COLOR_GREEN;
-     cylon_color_med = COLOR_GREEN_MED;   
-     cylon_color_dim = COLOR_GREEN_DIM;
-   }
-   else if (cylonColorMode == 3)
-   {
-     cylon_color = COLOR_BLUE;
-     cylon_color_med = COLOR_BLUE_MED;   
-     cylon_color_dim = COLOR_BLUE_DIM;
-   }
-   else if (cylonColorMode == 4)
-   {
-     cylon_color = COLOR_MAGENTA;
-     cylon_color_med = COLOR_MAGENTA_MED;   
-     cylon_color_dim = COLOR_MAGENTA_DIM;
-   }  
-   else if (cylonColorMode == 5)
-   {
-     cylon_color = COLOR_YELLOW;
-     cylon_color_med = COLOR_YELLOW_MED;   
-     cylon_color_dim = COLOR_YELLOW_DIM;
-   }   
-   else if (cylonColorMode == 6)
-   {
-     cylon_color = COLOR_CYAN;
-     cylon_color_med = COLOR_CYAN_MED;   
-     cylon_color_dim = COLOR_CYAN_DIM;
-   }   
-   else if (cylonColorMode == 7)
-   {
-     cylon_color = COLOR_RED;
-     cylon_color_med = COLOR_MAGENTA_MED;   
-     cylon_color_dim = COLOR_CYAN_DIM;
-   } 
-   else if (cylonColorMode == 8)
-   {
-     cylon_color = COLOR_GREEN;
-     cylon_color_med = COLOR_YELLOW_MED;   
-     cylon_color_dim = COLOR_RED_DIM;
-   } 
-    
+  cylon_palette_type palette;
+  
+  uint32_t cylon_color;
+  uint32_t cylon_color_med;
+  uint32_t cylon_color_dim;
+
+  /* set our current cylon "palette" */
+  palette = cylon_palette[cylonColorMode];
+  cylon_color = palette.bright;
+  cylon_color_med = palette.med;
+  cylon_color_dim = palette.dim;
+  
    // fills the cylon based on value of cylonMovingRight
    // need to improve the math and clean up code that determines what portion of the
    // cylon is full colr, medium, or dim
@@ -304,20 +262,67 @@ void showLEDs(){
       {
         pixels.setPixelColor(i,bgrd_color);
       }
-
     }
-    pixels.show();
+    pixels.show();    
+}
 
-    // This section slows the cylon when it is at the edges of the NUMPIXELS array
-    if( pixelState[0] == CYLON_EYE || pixelState[NUMPIXELS-1] == CYLON_EYE)
-      delay(cylonDelay*2.8);
-    // This section slows the cylon when it is close to the edges of the NUMPIXELS array
-    else if
-      ( pixelState[1] == CYLON_EYE || pixelState[NUMPIXELS-2] == CYLON_EYE)
-      delay(cylonDelay*2);
-    // This section slows the cylon the base cylonDelay amount when NOT at the edges of the array
+void moveLEDs(){
+
+  static uint32_t last_update_time_ms = 0;
+  uint32_t        curr_time_ms;
+
+  curr_time_ms = millis();
+
+
+ /* If enough time hasn't passed before updating, just return.  */
+  if (last_update_time_ms + cylonDelay > curr_time_ms)
+  {
+    return;
+  }
+
+
+  last_update_time_ms = curr_time_ms;
+  
+  if (cylonMovingRight == true)
+  {
+    if (pixelState[NUMPIXELS - 1] == 1) // check to see if far right spot is  cylon head
+      cylonHeadAtEdge = true;
     else
-      delay(cylonDelay);
+      cylonHeadAtEdge = false;
+      
+    if(cylonHeadAtEdge == true) // if at the edge switch direction to move left
+    {
+      cylonMovingRight = false;
+    }
+    else // move all pixels one spot to the right
+    {
+      for (int i = NUMPIXELS - 1; i > 0; i--)
+      {
+        pixelState[i]=pixelState[i-1];
+      }
+      pixelState[0]=0; // fill the far left spot with background or empty
+    } 
+  }
+  else // cylon is moving left
+  {
+     if (pixelState[0] == 1) // check to see if far left spot is now cylon head
+      cylonHeadAtEdge = true;
+     else 
+      cylonHeadAtEdge = false;
+      
+    if(cylonHeadAtEdge == true)
+    {
+      cylonMovingRight = true;
+    }
+    else
+    {
+      for (int i = 0; i < NUMPIXELS - 1; i++)
+      {
+        pixelState[i]=pixelState[i+1];
+      }
+      pixelState[NUMPIXELS - 1]=0;
+    }
+  }
 }
 
 /*================================================
@@ -327,6 +332,8 @@ void showLEDs(){
  * After each shift, showLEDs is called, then we check the pot for speed (delay) changes,
  * and checkButton looks but buttonPressed() to determine cylon color changes.
  *===============================================*/ 
+ 
+/*
 void shiftRIGHT(){
   cylonMovingRight = true;
  // Serial.println("RIGHT");
@@ -337,15 +344,16 @@ void shiftRIGHT(){
       pixelState[i]=pixelState[i-1];
     }
     pixelState[0]=0;
-    showLEDs();
-    checkSpeed();
-    checkButton();
   }
 }
+*/
+
 
 /*================================================
  * shiftLEFT function does the same as shiftRIGHT, but moves array to the left instead of right
  *===============================================*/ 
+ 
+/*
 void shiftLEFT(){
  // Serial.println("LEFT");
   cylonMovingRight = false;
@@ -356,11 +364,9 @@ void shiftLEFT(){
       pixelState[i]=pixelState[i+1];
     }
     pixelState[NUMPIXELS - 1]=0;
-    showLEDs();
-    checkSpeed();
-    checkButton();
   }
 }
+*/
 
 /*================================================
  * checkButton function calls buttonPressed() function which uses debouncing to determine if the
@@ -377,7 +383,7 @@ void checkButton(){
   if (buttonPressed())
   {
      cylonColorMode++;
-     if (cylonColorMode > 8)
+     if (cylonColorMode > 9)
         cylonColorMode = 1;
   }
 }
@@ -387,7 +393,17 @@ void checkButton(){
  * Eventually may switch from delays to EllapsedMillis to remove blocking calls.
  *===============================================*/ 
 void checkSpeed(){
-  cylonDelay = map (analogRead(POT_PIN),0,1024,150,1);
+  int pot_val;
+  int edgeDelayMultiplier = 1.80;
+  pot_val = analogRead(POT_PIN);
+  cylonDelay = map (pot_val,0,1024,CYLON_MAX_DELAY,CYLON_MIN_DELAY); //pot is backwards, so swap MAX and MIN to have faster delay when turned to the right
+  cylonDelay = constrain(cylonDelay,CYLON_MIN_DELAY,CYLON_MAX_DELAY);
+  
+  //multiply delay by edgeDelayMultiplier if cylon is at an edge to slow it momentarily.
+  if (cylonHeadAtEdge == true)
+    {
+    cylonDelay = cylonDelay * edgeDelayMultiplier;
+    }
 }
 
 /*================================================
@@ -395,7 +411,9 @@ void checkSpeed(){
  * shiftRIGHT() and shiftLEFT() alternate the cylon back and forth
  *===============================================*/ 
 void loop()
-{
-  shiftRIGHT();
-  shiftLEFT();
+{ 
+  moveLEDs();
+  showLEDs();
+  checkSpeed();
+  checkButton();
 }
