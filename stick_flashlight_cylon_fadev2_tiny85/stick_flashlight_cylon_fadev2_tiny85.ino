@@ -8,7 +8,7 @@
 
 #include <Adafruit_NeoPixel.h>
 
-// Which pin to use for DualRingLED control
+// Which pin to use for LED control
 #define LED_PIN    3
 
 #define BUTTON_PIN 0      // Tiny
