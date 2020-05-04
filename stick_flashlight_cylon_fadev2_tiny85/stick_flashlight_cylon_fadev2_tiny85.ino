@@ -16,7 +16,7 @@
 
 #define NUMPIXELS 8
 #define CYLONSIZE 4
-#define FULLARRAYSIZE 16
+#define FULLARRAYSIZE NUMPIXELS + 2* CYLONSIZE
 
 
 #define POT_PIN    2   // Tiny
@@ -103,7 +103,7 @@ void fillAll( uint32_t color )
 {
   int i;
 
-  for (i=0; i<FULLARRAYSIZE; i++)
+  for (i=0; i<FULLARRAYSIZE-1; i++)
   {
     pixels.setPixelColor(i, color);
   }
