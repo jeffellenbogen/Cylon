@@ -16,7 +16,8 @@
 
 #define NUMPIXELS 8
 #define CYLONSIZE 4
-#define FULLARRAYSIZE (CYLONSIZE * 2) + NUMPIXELS
+#define FULLARRAYSIZE 16
+
 
 #define POT_PIN    2   // Tiny
 //#define POT_PIN    A0    // Uno
