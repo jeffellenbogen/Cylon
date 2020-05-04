@@ -16,6 +16,7 @@
 
 #define NUMPIXELS 8
 #define CYLONSIZE 4
+#define FULLARRAYSIZE (CYLONSIZE * 2) + NUMPIXELS
 
 #define POT_PIN    2   // Tiny
 //#define POT_PIN    A0    // Uno
@@ -101,7 +102,7 @@ void fillAll( uint32_t color )
 {
   int i;
 
-  for (i=0; i<NUMPIXELS; i++)
+  for (i=0; i<FULLARRAYSIZE; i++)
   {
     pixels.setPixelColor(i, color);
   }
@@ -185,7 +186,7 @@ void setup()
 void setupCylon(){
     int i;
     uint32_t led_color=COLOR_RED;
-    for (int i=0; i < NUMPIXELS; i++)
+    for (int i=0; i < FULLARRAYSIZE-1; i++)
     {
       if (i < CYLONSIZE)
       {
@@ -225,7 +226,7 @@ void showLEDs(){
 
    int cylonCounter = 0; // track how many pixels have been lit for fading
    
-   for (int i=0; i < NUMPIXELS; i++)
+   for (int i=CYLONSIZE; i < FULLARRAYSIZE-CYLONSIZE-1; i++)
     {
         /*cylons will have a dim tail made of a variable length beyond the first two leds
         second to front led will be medium and head will be full color
@@ -285,7 +286,7 @@ void moveLEDs(){
   
   if (cylonMovingRight == true)
   {
-    if (pixelState[NUMPIXELS - 1] == 1) // check to see if far right spot is  cylon head
+    if (pixelState[FULLARRAYSIZE - 1] == 1) // check to see if far right spot is  cylon head
       cylonHeadAtEdge = true;
     else
       cylonHeadAtEdge = false;
@@ -296,7 +297,7 @@ void moveLEDs(){
     }
     else // move all pixels one spot to the right
     {
-      for (int i = NUMPIXELS - 1; i > 0; i--)
+      for (int i = FULLARRAYSIZE - 1; i > 0; i--)
       {
         pixelState[i]=pixelState[i-1];
       }
@@ -316,11 +317,11 @@ void moveLEDs(){
     }
     else
     {
-      for (int i = 0; i < NUMPIXELS - 1; i++)
+      for (int i = 0; i < FULLARRAYSIZE - 1; i++)
       {
         pixelState[i]=pixelState[i+1];
       }
-      pixelState[NUMPIXELS - 1]=0;
+      pixelState[FULLARRAYSIZE - 1]=0;
     }
   }
 }
@@ -398,12 +399,14 @@ void checkSpeed(){
   pot_val = analogRead(POT_PIN);
   cylonDelay = map (pot_val,0,1024,CYLON_MAX_DELAY,CYLON_MIN_DELAY); //pot is backwards, so swap MAX and MIN to have faster delay when turned to the right
   cylonDelay = constrain(cylonDelay,CYLON_MIN_DELAY,CYLON_MAX_DELAY);
-  
+
+  /*
   //multiply delay by edgeDelayMultiplier if cylon is at an edge to slow it momentarily.
   if (cylonHeadAtEdge == true)
     {
     cylonDelay = cylonDelay * edgeDelayMultiplier;
     }
+    */
 }
 
 /*================================================
