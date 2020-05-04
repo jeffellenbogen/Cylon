@@ -16,7 +16,7 @@
 
 #define NUMPIXELS 8
 #define CYLONSIZE 4
-#define FULLARRAYSIZE NUMPIXELS + 2* CYLONSIZE
+#define FULLARRAYSIZE NUMPIXELS + 2 * CYLONSIZE
 
 
 #define POT_PIN    2   // Tiny
@@ -191,7 +191,11 @@ void setupCylon(){
     {
       if (i < CYLONSIZE)
       {
-         pixelState[i] = CYLON_EYE;
+         pixelState[i] = CYLON_BACKGROUND;
+      }
+      else if (i >= CYLONSIZE && i< CYLONSIZE * 2)
+      {
+        pixelState[i] = CYLON_EYE;
       }
       else
       {
@@ -227,12 +231,15 @@ void showLEDs(){
 
    int cylonCounter = 0; // track how many pixels have been lit for fading
    
-   for (int i=CYLONSIZE; i < FULLARRAYSIZE-CYLONSIZE-1; i++)
+   for (int i=0; i < NUMPIXELS-1; i++)
     {
+        // i is used to increment through the LEDs themselves
+        // j is used to adjust the values of the pixelState from the whole FULLARRAYSIZE
+        int j = i + CYLONSIZE;
         /*cylons will have a dim tail made of a variable length beyond the first two leds
         second to front led will be medium and head will be full color
         */
-      if (cylonMovingRight == true && pixelState[i] == CYLON_EYE )
+      if (cylonMovingRight == true && pixelState[j] == CYLON_EYE )
       {
         cylonCounter++;  
         /*When filling the cylon moving right, we start with the dim leds
@@ -246,7 +253,7 @@ void showLEDs(){
           pixels.setPixelColor(i,cylon_color);  
            
       }
-      else if (cylonMovingRight == false && pixelState[i] == CYLON_EYE)
+      else if (cylonMovingRight == false && pixelState[j] == CYLON_EYE)
       {
         cylonCounter++;
         /*When filling the cylon moving left, we start with the bright led at the head
