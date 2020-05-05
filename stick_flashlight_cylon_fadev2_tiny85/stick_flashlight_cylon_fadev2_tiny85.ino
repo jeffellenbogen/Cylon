@@ -14,8 +14,11 @@
 #define BUTTON_PIN 0      // Tiny
 //#define BUTTON_PIN 8    // Uno
 
-#define NUMPIXELS 8
+#define WINDOWSIZE 8
 #define CYLONSIZE 4
+#define SIDEBUFFERSIZE 3
+#define FULLARRAYSIZE (WINDOWSIZE + 2 * SIDEBUFFERSIZE)
+
 
 #define POT_PIN    2   // Tiny
 //#define POT_PIN    A0    // Uno
@@ -26,7 +29,7 @@ typedef enum
   CYLON_EYE
 } cylon_state_type;
 
-cylon_state_type pixelState[NUMPIXELS];
+cylon_state_type pixelState[FULLARRAYSIZE];
 
 #define CYLON_MIN_DELAY 10
 #define CYLON_MAX_DELAY 1000
@@ -41,7 +44,7 @@ bool cylonMovingRight = true;
 // track position of cylon head in relation to edge of LED strip so we can pause longer at edges and know when to turn around
 bool cylonHeadAtEdge = false;
 
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, LED_PIN, NEO_GRB+NEO_KHZ800);
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(WINDOWSIZE, LED_PIN, NEO_GRB+NEO_KHZ800);
 
 #define COLOR_RED     0xFF0000
 #define COLOR_RED_MED 0x3C0000
@@ -101,7 +104,7 @@ void fillAll( uint32_t color )
 {
   int i;
 
-  for (i=0; i<NUMPIXELS; i++)
+  for (i=0; i<FULLARRAYSIZE; i++)
   {
     pixels.setPixelColor(i, color);
   }
@@ -180,18 +183,22 @@ void setup()
 /*================================================
  * setupCylon function called from setup() and perhaps other times
  * 
- * Fills the leds based on CYLONSIZE and NUMPIXELS.
+ * Fills the leds based on CYLONSIZE and WINDOWSIZE.
  *===============================================*/ 
 void setupCylon(){
     int i;
     uint32_t led_color=COLOR_RED;
-    for (int i=0; i < NUMPIXELS; i++)
+    for (int i=0; i < FULLARRAYSIZE; i++)
     {
-      if (i < CYLONSIZE)
+      if (i < SIDEBUFFERSIZE) // populate the area to the left of the visible window of LEDs with background color
       {
-         pixelState[i] = CYLON_EYE;
+         pixelState[i] = CYLON_BACKGROUND;
       }
-      else
+      else if (i >= SIDEBUFFERSIZE && i< SIDEBUFFERSIZE + CYLONSIZE ) // populate the left side of the visible window of LEDs with cylon color
+      {
+        pixelState[i] = CYLON_EYE;
+      }
+      else // populate the rest of the FULLARRAY with background color
       {
          pixelState[i] = CYLON_BACKGROUND; 
       }    
@@ -225,12 +232,15 @@ void showLEDs(){
 
    int cylonCounter = 0; // track how many pixels have been lit for fading
    
-   for (int i=0; i < NUMPIXELS; i++)
+   for (int i=0; i < WINDOWSIZE; i++)
     {
+        // i is used to increment through the LEDs themselves
+        // j is used to adjust the values of the pixelState of the WINDOWSIZE LEDS from the whole FULLARRAYSIZE
+        int j = i + SIDEBUFFERSIZE;
         /*cylons will have a dim tail made of a variable length beyond the first two leds
         second to front led will be medium and head will be full color
         */
-      if (cylonMovingRight == true && pixelState[i] == CYLON_EYE )
+      if (cylonMovingRight == true && pixelState[j] == CYLON_EYE )
       {
         cylonCounter++;  
         /*When filling the cylon moving right, we start with the dim leds
@@ -244,7 +254,7 @@ void showLEDs(){
           pixels.setPixelColor(i,cylon_color);  
            
       }
-      else if (cylonMovingRight == false && pixelState[i] == CYLON_EYE)
+      else if (cylonMovingRight == false && pixelState[j] == CYLON_EYE)
       {
         cylonCounter++;
         /*When filling the cylon moving left, we start with the bright led at the head
@@ -283,9 +293,9 @@ void moveLEDs(){
 
   last_update_time_ms = curr_time_ms;
   
-  if (cylonMovingRight == true)
+  if (cylonMovingRight == true) // If we cylon is moving right...
   {
-    if (pixelState[NUMPIXELS - 1] == 1) // check to see if far right spot is  cylon head
+    if (pixelState[FULLARRAYSIZE - 1] == 1) // check to see if far right spot is cylon head
       cylonHeadAtEdge = true;
     else
       cylonHeadAtEdge = false;
@@ -296,9 +306,9 @@ void moveLEDs(){
     }
     else // move all pixels one spot to the right
     {
-      for (int i = NUMPIXELS - 1; i > 0; i--)
+      for (int j = FULLARRAYSIZE - 1; j > 0; j--)
       {
-        pixelState[i]=pixelState[i-1];
+        pixelState[j]=pixelState[j-1];
       }
       pixelState[0]=0; // fill the far left spot with background or empty
     } 
@@ -316,11 +326,11 @@ void moveLEDs(){
     }
     else
     {
-      for (int i = 0; i < NUMPIXELS - 1; i++)
+      for (int j = 0; j < FULLARRAYSIZE - 1; j++)
       {
-        pixelState[i]=pixelState[i+1];
+        pixelState[j]=pixelState[j+1];
       }
-      pixelState[NUMPIXELS - 1]=0;
+      pixelState[FULLARRAYSIZE - 1]=0;
     }
   }
 }
@@ -337,9 +347,9 @@ void moveLEDs(){
 void shiftRIGHT(){
   cylonMovingRight = true;
  // Serial.println("RIGHT");
-  while (pixelState[NUMPIXELS - 1] == 0)
+  while (pixelState[WINDOWSIZE - 1] == 0)
   {
-    for (int i = NUMPIXELS - 1; i > 0; i--)
+    for (int i = WINDOWSIZE - 1; i > 0; i--)
     {
       pixelState[i]=pixelState[i-1];
     }
@@ -359,11 +369,11 @@ void shiftLEFT(){
   cylonMovingRight = false;
   while (pixelState[0] == 0)
   {
-    for (int i = 0; i < NUMPIXELS - 1; i++)
+    for (int i = 0; i < WINDOWSIZE - 1; i++)
     {
       pixelState[i]=pixelState[i+1];
     }
-    pixelState[NUMPIXELS - 1]=0;
+    pixelState[WINDOWSIZE - 1]=0;
   }
 }
 */
@@ -398,12 +408,14 @@ void checkSpeed(){
   pot_val = analogRead(POT_PIN);
   cylonDelay = map (pot_val,0,1024,CYLON_MAX_DELAY,CYLON_MIN_DELAY); //pot is backwards, so swap MAX and MIN to have faster delay when turned to the right
   cylonDelay = constrain(cylonDelay,CYLON_MIN_DELAY,CYLON_MAX_DELAY);
-  
+
+  /*
   //multiply delay by edgeDelayMultiplier if cylon is at an edge to slow it momentarily.
   if (cylonHeadAtEdge == true)
     {
     cylonDelay = cylonDelay * edgeDelayMultiplier;
     }
+    */
 }
 
 /*================================================
