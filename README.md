@@ -2,6 +2,9 @@
 UPDATED 5/5/2020 6:11 pm
 I went with Option 2. Reworked the showLEDs() function with a different strategy. Now this function looks at which direction the cylon is moving via the bool cylonMovingRight. Then there are two separate for loops depending on the direction. When moving right the cylon is filled from the right side first, which has the benefit of starting with the head or brightest pixel and then as the for loops moves through the medium and then dim pixels are added.
 
+Video of cylon working in after the reworked showLEDs() update.
+https://drive.google.com/file/d/1I9NZccexW2EgEiqjy2WH0xh5EaE1K6Uc/view?usp=sharing
+
 UPDATED 5/5/2020 around 4pm
 New version of Cylon creates a virtual WINDOW where the pixels are visible from a larger array of values where the state of the array is stored.
 
