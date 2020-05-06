@@ -231,49 +231,47 @@ void showLEDs(){
    // cylon is full colr, medium, or dim
 
    int cylonCounter = 0; // track how many pixels have been lit for fading
-   
-   for (int i=0; i < WINDOWSIZE; i++)
-    {
-        // i is used to increment through the LEDs themselves
-        // j is used to adjust the values of the pixelState of the WINDOWSIZE LEDS from the whole FULLARRAYSIZE
-        int j = i + SIDEBUFFERSIZE;
-        /*cylons will have a dim tail made of a variable length beyond the first two leds
-        second to front led will be medium and head will be full color
-        */
-      if (cylonMovingRight == true && pixelState[j] == CYLON_EYE )
-      {
-        cylonCounter++;  
-        /*When filling the cylon moving right, we start with the dim leds
-        (CYLONSIZE - cylonCounter) tracks when we have two leds left to fill with medium and full
-        */
-        if (CYLONSIZE - cylonCounter >= 2)
-          pixels.setPixelColor(i,cylon_color_dim);
-        else if (CYLONSIZE - cylonCounter == 1)
-          pixels.setPixelColor(i,cylon_color_med);   
-        else //if (CYLONSIZE - cylonCounter == 0)
-          pixels.setPixelColor(i,cylon_color);  
-           
-      }
-      else if (cylonMovingRight == false && pixelState[j] == CYLON_EYE)
-      {
-        cylonCounter++;
-        /*When filling the cylon moving left, we start with the bright led at the head
-        This is much easier. Just start with the head at full brightness and the second led
-        will be medium. All others are dim, so we can just used the cylonCounter
-        */
-        if (cylonCounter == 1)
-          pixels.setPixelColor(i,cylon_color);
-        else if (cylonCounter == 2)
-          pixels.setPixelColor(i,cylon_color_med);   
-        else
-          pixels.setPixelColor(i,cylon_color_dim);   
-      }
-      else
-      {
-        pixels.setPixelColor(i,bgrd_color);
-      }
-    }
-    pixels.show();    
+
+   if (cylonMovingRight)
+   {
+       for (int i=WINDOWSIZE-1; i >= 0; i--)
+       {
+          int j = i + SIDEBUFFERSIZE;
+          if (pixelState[j] == CYLON_EYE)
+          {
+            cylonCounter++;
+            if (cylonCounter == 1)
+              pixels.setPixelColor(i,cylon_color);
+            else if (cylonCounter == 2)
+              pixels.setPixelColor(i,cylon_color_med);   
+            else
+               pixels.setPixelColor(i,cylon_color_dim); 
+          }
+          else
+            pixels.setPixelColor(i,bgrd_color); 
+       }
+   }
+   else
+   {
+    for (int i=0; i< WINDOWSIZE; i++)
+       {
+          int j = i + SIDEBUFFERSIZE;
+          if (pixelState[j] == CYLON_EYE)
+          {
+            cylonCounter++;
+            if (cylonCounter == 1)
+              pixels.setPixelColor(i,cylon_color);
+            else if (cylonCounter == 2)
+              pixels.setPixelColor(i,cylon_color_med);   
+            else
+               pixels.setPixelColor(i,cylon_color_dim); 
+          }
+          else
+            pixels.setPixelColor(i,bgrd_color); 
+       }
+    
+   }
+   pixels.show();    
 }
 
 void moveLEDs(){
