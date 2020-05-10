@@ -15,10 +15,9 @@
 #define BUTTON_PIN 8    // Uno
 
 #define WINDOWSIZE 96
-#define CYLONSIZE 40
+#define CYLONSIZE 20
 #define SIDEBUFFERSIZE (CYLONSIZE-1)
 #define FULLARRAYSIZE (WINDOWSIZE + 2 * SIDEBUFFERSIZE)
-
 
 //#define POT_PIN    2   // Tiny
 #define POT_PIN    A0    // Uno
@@ -37,6 +36,26 @@ int cylonDelay;
 
 int cylonIndex = 0;
 int cylonColorMode = 1;
+
+int colorGradientMode = 1;
+int start_red = 255;
+int start_green = 0;
+int start_blue = 0;
+int end_red = 0;
+int end_green = 255;
+int end_blue = 255;
+
+typedef struct
+{
+  int red;
+  int green;
+  int blue;
+} drgb_type;
+
+drgb_type color_gradient[CYLONSIZE];
+
+drgb_type start_color={start_red,start_green,start_blue};
+drgb_type end_color={end_red,end_green,end_blue};
 
 // track direction of cylon right or left to allow for fading trail 
 bool cylonMovingRight = true;
@@ -71,7 +90,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(WINDOWSIZE, LED_PIN, NEO_GRB+NEO_KH
 #define COLOR_CYAN_DIM    0x001010
 
 #define COLOR_BLACK   0
-#define COLOR_WHITE   0xFFFFFF
+#define COLOR_WHITE   0x101010
 
 uint32_t bgrd_color = COLOR_BLACK;
 
@@ -82,6 +101,7 @@ typedef struct
   uint32_t dim;
 } cylon_palette_type;
 
+/* not currently using color_palettes for bright, medium, dim. Using colorGradient instead
 cylon_palette_type cylon_palette[]=
 {
   // bright        med                dim
@@ -96,19 +116,8 @@ cylon_palette_type cylon_palette[]=
   {COLOR_GREEN,   COLOR_YELLOW_MED,  COLOR_RED_DIM},      // mode 8
   {COLOR_BLUE,   COLOR_CYAN_MED,  COLOR_GREEN_DIM}       // mode 9
 };
+*/
 
-/*================================================================================
- * fillAll
- */
-void fillAll( uint32_t color )
-{
-  int i;
-
-  for (i=0; i<FULLARRAYSIZE; i++)
-  {
-    pixels.setPixelColor(i, color);
-  }
-}
 
 /*================================================
  * Debounce function.
@@ -175,6 +184,7 @@ void setup()
     #endif
     
     pixels.begin();
+    Serial.println("STARTING CYLON NOW!");
     setupCylon();
     delay(1000);
 }
@@ -187,7 +197,7 @@ void setup()
  *===============================================*/ 
 void setupCylon(){
     int i;
-    uint32_t led_color=COLOR_RED;
+    uint32_t led_color=bgrd_color;
     for (int i=0; i < FULLARRAYSIZE; i++)
     {
       if (i < SIDEBUFFERSIZE) // populate the area to the left of the visible window of LEDs with background color
@@ -203,6 +213,9 @@ void setupCylon(){
          pixelState[i] = CYLON_BACKGROUND; 
       }    
     }
+    setupGradient(colorGradientMode);
+    makeGradient(CYLONSIZE);
+  //  printGradient(CYLONSIZE);
     showLEDs();
 }
 
@@ -214,17 +227,19 @@ void setupCylon(){
  * Slows the cylon at the edges of the array of leds.
  *===============================================*/ 
 void showLEDs(){
+  /*
   cylon_palette_type palette;
   
   uint32_t cylon_color;
   uint32_t cylon_color_med;
   uint32_t cylon_color_dim;
 
-  /* set our current cylon "palette" */
+  // set our current cylon "palette" 
   palette = cylon_palette[cylonColorMode];
   cylon_color = palette.bright;
   cylon_color_med = palette.med;
   cylon_color_dim = palette.dim;
+  */
   
    // fills the cylon based on value of cylonMovingRight
    // need to improve the math and clean up code that determines what portion of the
@@ -239,13 +254,17 @@ void showLEDs(){
           int j = i + SIDEBUFFERSIZE;
           if (pixelState[j] == CYLON_EYE)
           {
-            cylonCounter++;
+            //fill the cylon from the start_color moving towards end_color. cylonCounter tracks how many pixels of cylon have been filled so far.
+            pixels.setPixelColor(i, color_gradient[cylonCounter].red, color_gradient[cylonCounter].green, color_gradient[cylonCounter].blue);
+            cylonCounter++;     
+            /* This is the old method for filling the cylon using set bright, med, dim colors for various parts of the cylon
             if (cylonCounter == 1 )
               pixels.setPixelColor(i,cylon_color);
             else if (cylonCounter <= .4*CYLONSIZE)
               pixels.setPixelColor(i,cylon_color_med);   
             else
                pixels.setPixelColor(i,cylon_color_dim); 
+             */
           }
           else
             pixels.setPixelColor(i,bgrd_color); 
@@ -258,14 +277,19 @@ void showLEDs(){
           int j = i + SIDEBUFFERSIZE;
           if (pixelState[j] == CYLON_EYE)
           {
-            cylonCounter++;
+             pixels.setPixelColor(i, color_gradient[cylonCounter].red, color_gradient[cylonCounter].green, color_gradient[cylonCounter].blue);
+             cylonCounter++;           
+            /*
+            
             if (cylonCounter == 1)
               pixels.setPixelColor(i,cylon_color);
             else if (cylonCounter <= .4*CYLONSIZE)
               pixels.setPixelColor(i,cylon_color_med);   
             else
                pixels.setPixelColor(i,cylon_color_dim); 
+             */
           }
+          
           else
             pixels.setPixelColor(i,bgrd_color); 
        }
@@ -334,49 +358,6 @@ void moveLEDs(){
 }
 
 /*================================================
- * shiftRIGHT function moves the on/off status of the array of leds to the right,
- * until the far right is on rather than off.
- * 
- * After each shift, showLEDs is called, then we check the pot for speed (delay) changes,
- * and checkButton looks but buttonPressed() to determine cylon color changes.
- *===============================================*/ 
- 
-/*
-void shiftRIGHT(){
-  cylonMovingRight = true;
- // Serial.println("RIGHT");
-  while (pixelState[WINDOWSIZE - 1] == 0)
-  {
-    for (int i = WINDOWSIZE - 1; i > 0; i--)
-    {
-      pixelState[i]=pixelState[i-1];
-    }
-    pixelState[0]=0;
-  }
-}
-*/
-
-
-/*================================================
- * shiftLEFT function does the same as shiftRIGHT, but moves array to the left instead of right
- *===============================================*/ 
- 
-/*
-void shiftLEFT(){
- // Serial.println("LEFT");
-  cylonMovingRight = false;
-  while (pixelState[0] == 0)
-  {
-    for (int i = 0; i < WINDOWSIZE - 1; i++)
-    {
-      pixelState[i]=pixelState[i+1];
-    }
-    pixelState[WINDOWSIZE - 1]=0;
-  }
-}
-*/
-
-/*================================================
  * checkButton function calls buttonPressed() function which uses debouncing to determine if the
  * button was pressed.
  * 
@@ -390,6 +371,21 @@ void shiftLEFT(){
 void checkButton(){
   if (buttonPressed())
   {
+     colorGradientMode++;
+     if (colorGradientMode > 3)
+       colorGradientMode = 1;
+     setupGradient(colorGradientMode);
+     makeGradient(CYLONSIZE);
+     
+     #if 0
+     // Uno debug 
+     Serial.print("colorGradientMode = ");
+     Serial.println(colorGradientMode);
+     printGradient(CYLONSIZE);
+    #endif  
+  }
+  /* This is the older method for incrementing between the colorPalettes of bright, med, dim
+  {
      cylonColorMode++;
      if (cylonColorMode > 9)
         cylonColorMode = 1;
@@ -400,6 +396,7 @@ void checkButton(){
     Serial.println(cylonColorMode);
     #endif
   }
+  */
 }
 
 /*================================================
@@ -408,18 +405,97 @@ void checkButton(){
  *===============================================*/ 
 void checkSpeed(){
   int pot_val;
-  int edgeDelayMultiplier = 1.80;
   pot_val = analogRead(POT_PIN);
   cylonDelay = map (pot_val,0,1024,CYLON_MAX_DELAY,CYLON_MIN_DELAY); //pot is backwards, so swap MAX and MIN to have faster delay when turned to the right
   cylonDelay = constrain(cylonDelay,CYLON_MIN_DELAY,CYLON_MAX_DELAY);
 
-  /*
-  //multiply delay by edgeDelayMultiplier if cylon is at an edge to slow it momentarily.
-  if (cylonHeadAtEdge == true)
-    {
-    cylonDelay = cylonDelay * edgeDelayMultiplier;
-    }
-    */
+}
+
+/*================================================
+ * setupGradient function takes the passed value of colorGradientMode
+ * and sets the start and end color values for red, green, and blue to be used
+ * by makeGradient to calculate all of the drgb color values for the whole LED array
+ * THIS is where we can create NEW gradients to be used to color the cylon
+ *===============================================*/ 
+void setupGradient(int gradientMode){
+  switch (gradientMode) {
+  case 1:
+     Serial.println("SWITCH gradientMode 1");
+     start_color.red = 255;
+     start_color.green = 0;
+     start_color.blue = 0;
+     end_color.red = 0;
+     end_color.green = 0;
+     end_color.blue = 255;
+     break;
+  case 2:
+     Serial.println("SWITCH gradientMode 2");
+     start_color.red = 0;
+     start_color.green = 255;
+     start_color.blue = 255;
+     end_color.red = 100;
+     end_color.green = 0;
+     end_color.blue = 200;
+     break;
+  case 3:
+     Serial.println("SWITCH gradientMode 3");
+     start_color.red = 200;
+     start_color.green = 180;
+     start_color.blue = 0;
+     end_color.red = 30;
+     end_color.green = 255;
+     end_color.blue = 0;
+    break;
+  }
+}
+
+/*================================================
+ * makeGrandient function takes the number of LEDs for the gradient array and
+ * calculated the step_size for each color. Then we use a for loop to add that
+ * step_size to the start_color for each color.
+ *===============================================*/ 
+void makeGradient(int divisions){
+  int step_size_red = (end_color.red - start_color.red) / (divisions-1);
+  int step_size_green = (end_color.green - start_color.green) / (divisions-1);
+  int step_size_blue = (end_color.blue - start_color.blue) / (divisions-1); 
+
+  // set start_color for each color and then increment through all but the final division 
+  // based on the step_size for each color.
+  for (int i = 0; i < divisions - 1; i++)
+  {
+    color_gradient[i].red = start_color.red + i * step_size_red;
+    color_gradient[i].green = start_color.green + i * step_size_green;
+    color_gradient[i].blue = start_color.blue + i * step_size_blue;  
+  }
+  
+  // last division is set to the end_color for each color.
+  color_gradient[divisions-1].red = end_color.red;
+  color_gradient[divisions-1].green = end_color.green;
+  color_gradient[divisions-1].blue = end_color.blue;
+}
+
+/*================================================
+ * printGradient function uses Serial.print statements to display values of the red, green, blue 
+ * for each item in the LED array
+ *===============================================*/ 
+void printGradient(int divisions){
+  for (int i = 0; i < divisions; i++)
+  {
+    Serial.print("color_gradient[");
+    Serial.print(i);
+    Serial.print("].red = ");
+    Serial.print(color_gradient[i].red);
+
+    Serial.print(" color_gradient[");
+    Serial.print(i);
+    Serial.print("].green = ");
+    Serial.print(color_gradient[i].green);
+
+    Serial.print(" color_gradient[");
+    Serial.print(i);
+    Serial.print("].blue = ");
+    Serial.println(color_gradient[i].blue);
+  }
 }
 
 /*================================================
