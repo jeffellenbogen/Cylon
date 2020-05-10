@@ -372,7 +372,7 @@ void checkButton(){
   if (buttonPressed())
   {
      colorGradientMode++;
-     if (colorGradientMode > 3)
+     if (colorGradientMode > 4)
        colorGradientMode = 1;
      setupGradient(colorGradientMode);
      makeGradient(CYLONSIZE);
@@ -420,6 +420,7 @@ void checkSpeed(){
 void setupGradient(int gradientMode){
   switch (gradientMode) {
   case 1:
+     //red to blue gradient
      Serial.println("SWITCH gradientMode 1");
      start_color.red = 255;
      start_color.green = 0;
@@ -429,23 +430,35 @@ void setupGradient(int gradientMode){
      end_color.blue = 255;
      break;
   case 2:
+     //white to black gradient
      Serial.println("SWITCH gradientMode 2");
-     start_color.red = 0;
+     start_color.red = 255;
      start_color.green = 255;
      start_color.blue = 255;
-     end_color.red = 100;
+     end_color.red = 0;
      end_color.green = 0;
-     end_color.blue = 200;
+     end_color.blue = 0;
      break;
   case 3:
+     //magenta to cyan
      Serial.println("SWITCH gradientMode 3");
-     start_color.red = 200;
-     start_color.green = 180;
-     start_color.blue = 0;
-     end_color.red = 30;
+     start_color.red = 255;
+     start_color.green = 0;
+     start_color.blue = 255;
+     end_color.red = 0;
      end_color.green = 255;
-     end_color.blue = 0;
+     end_color.blue = 255;
     break;
+  case 4:
+     //green to purple
+     Serial.println("SWITCH gradientMode 3");
+     start_color.red = 0;
+     start_color.green = 102;
+     start_color.blue = 0;
+     end_color.red = 153;
+     end_color.green = 0;
+     end_color.blue = 204;
+    break; 
   }
 }
 
