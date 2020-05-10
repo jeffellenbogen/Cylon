@@ -464,7 +464,7 @@ void setupGradient(int gradientMode){
      Serial.println("SWITCH gradientMode 5");
      start_color.red = 255;
      start_color.green = 153;
-     start_color.blue = 51;
+     start_color.blue = 0;
      end_color.red = 255;
      end_color.green = 255;
      end_color.blue = 0;
