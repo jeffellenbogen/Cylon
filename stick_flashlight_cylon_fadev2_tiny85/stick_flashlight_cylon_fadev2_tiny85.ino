@@ -447,17 +447,17 @@ void setupGradient(int gradientMode){
      start_color.blue = 255;
      end_color.red = 0;
      end_color.green = 255;
-     end_color.blue = 127;
+     end_color.blue = 255;
     break;
   case 4:
      //green to purple
      //Serial.println("SWITCH gradientMode 4");
      start_color.red = 0;
-     start_color.green = 102;
+     start_color.green = 255;
      start_color.blue = 0;
-     end_color.red = 153;
+     end_color.red = 40;
      end_color.green = 0;
-     end_color.blue = 204;
+     end_color.blue = 255;
     break; 
    case 5:
      //orange to yellow
