@@ -15,7 +15,7 @@
 #define BUTTON_PIN 8    // Uno
 
 #define WINDOWSIZE 96
-#define CYLONSIZE 20
+#define CYLONSIZE 8
 #define SIDEBUFFERSIZE (CYLONSIZE-1)
 #define FULLARRAYSIZE (WINDOWSIZE + 2 * SIDEBUFFERSIZE)
 
@@ -451,7 +451,7 @@ void setupGradient(int gradientMode){
     break;
   case 4:
      //green to purple
-     Serial.println("SWITCH gradientMode 3");
+     Serial.println("SWITCH gradientMode 4");
      start_color.red = 0;
      start_color.green = 102;
      start_color.blue = 0;
@@ -459,6 +459,16 @@ void setupGradient(int gradientMode){
      end_color.green = 0;
      end_color.blue = 204;
     break; 
+   case 5:
+     //orange to yellow
+     Serial.println("SWITCH gradientMode 5");
+     start_color.red = 255;
+     start_color.green = 153;
+     start_color.blue = 51;
+     end_color.red = 255;
+     end_color.green = 255;
+     end_color.blue = 0;
+    break;
   }
 }
 
