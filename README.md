@@ -1,4 +1,9 @@
 # Cylon
+
+UPDATED 5/10/2020 12:02 pm
+Create a drgb datatype that is a struct that will contain the values of red, green, and blue for each item in a pixel array.
+Then create two functions - makeGradient() and printGradient() to set and display the values of red,green, and blue as we move through the array from the start value of each color to the end value of each color.
+
 UPDATED 5/5/2020 6:11 pm
 I went with Option 2. Reworked the showLEDs() function with a different strategy. Now this function looks at which direction the cylon is moving via the bool cylonMovingRight. Then there are two separate for loops depending on the direction. When moving right the cylon is filled from the right side first, which has the benefit of starting with the head or brightest pixel and then as the for loops moves through the medium and then dim pixels are added.
 
