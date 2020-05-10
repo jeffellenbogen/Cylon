@@ -435,7 +435,7 @@ void setupGradient(int gradientMode){
      start_color.red = 255;
      start_color.green = 0;
      start_color.blue = 0;
-     end_color.red = 10;
+     end_color.red = 50;
      end_color.green = 0;
      end_color.blue = 0;
      break;
@@ -454,7 +454,7 @@ void setupGradient(int gradientMode){
      //Serial.println("SWITCH gradientMode 4");
      start_color.red = 0;
      start_color.green = 255;
-     start_color.blue = 0;
+     start_color.blue = 100;
      end_color.red = 40;
      end_color.green = 0;
      end_color.blue = 255;
@@ -463,9 +463,9 @@ void setupGradient(int gradientMode){
      //orange to yellow
      //Serial.println("SWITCH gradientMode 5");
      start_color.red = 255;
-     start_color.green = 153;
+     start_color.green = 50;
      start_color.blue = 0;
-     end_color.red = 255;
+     end_color.red = 150;
      end_color.green = 255;
      end_color.blue = 0;
     break;
