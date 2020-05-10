@@ -372,7 +372,7 @@ void checkButton(){
   if (buttonPressed())
   {
      colorGradientMode++;
-     if (colorGradientMode > 4)
+     if (colorGradientMode > 5)
        colorGradientMode = 1;
      setupGradient(colorGradientMode);
      makeGradient(CYLONSIZE);
