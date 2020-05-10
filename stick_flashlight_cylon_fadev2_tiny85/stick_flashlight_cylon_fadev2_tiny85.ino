@@ -90,7 +90,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(WINDOWSIZE, LED_PIN, NEO_GRB+NEO_KH
 #define COLOR_CYAN_DIM    0x001010
 
 #define COLOR_BLACK   0
-#define COLOR_WHITE   0x101010
+#define COLOR_WHITE   0xFFFFFF
 
 uint32_t bgrd_color = COLOR_BLACK;
 
@@ -430,12 +430,12 @@ void setupGradient(int gradientMode){
      end_color.blue = 255;
      break;
   case 2:
-     //red to black gradient
+     //red to dim red gradient
      //Serial.println("SWITCH gradientMode 2");
      start_color.red = 255;
      start_color.green = 0;
      start_color.blue = 0;
-     end_color.red = 0;
+     end_color.red = 10;
      end_color.green = 0;
      end_color.blue = 0;
      break;
