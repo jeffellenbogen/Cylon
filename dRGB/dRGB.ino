@@ -15,7 +15,7 @@ typedef struct
   int blue;
 } drgb_type;
 
-drgb_type cylon_pixels[CYLONSIZE];
+drgb_type color_gradient[CYLONSIZE];
 
 drgb_type start_color={start_red,start_green,start_blue};
 drgb_type end_color={end_red,end_green,end_blue};
@@ -62,38 +62,38 @@ void makeGradient(int divisions){
   // based on the step_size for each color.
   for (int i = 0; i < divisions - 1; i++)
   {
-    cylon_pixels[i].red = start_color.red + i * step_size_red;
-    cylon_pixels[i].green = start_color.green + i * step_size_green;
-    cylon_pixels[i].blue = start_color.blue + i * step_size_blue;  
+    color_gradient[i].red = start_color.red + i * step_size_red;
+    color_gradient[i].green = start_color.green + i * step_size_green;
+    color_gradient[i].blue = start_color.blue + i * step_size_blue;  
   }
   
   // last division is set to the end_color for each color.
-  cylon_pixels[divisions-1].red = end_color.red;
-  cylon_pixels[divisions-1].green = end_color.green;
-  cylon_pixels[divisions-1].blue = end_color.blue;
+  color_gradient[divisions-1].red = end_color.red;
+  color_gradient[divisions-1].green = end_color.green;
+  color_gradient[divisions-1].blue = end_color.blue;
 }
 
 /*
- * printGradient function traverses through the cylon_pixels array and Serial
+ * printGradient function traverses through the color_gradient array and Serial
  * prints each value of red, green, and blue for the item in drgb datatype array
  */
 
 void printGradient(int divisions){
   for (int i = 0; i < divisions; i++)
   {
-    Serial.print("cylon_pixels[");
+    Serial.print("color_gradient[");
     Serial.print(i);
     Serial.print("].red = ");
-    Serial.print(cylon_pixels[i].red);
+    Serial.print(color_gradient[i].red);
 
-    Serial.print(" cylon_pixels[");
+    Serial.print(" color_gradient[");
     Serial.print(i);
     Serial.print("].green = ");
-    Serial.print(cylon_pixels[i].green);
+    Serial.print(color_gradient[i].green);
 
-    Serial.print(" cylon_pixels[");
+    Serial.print(" color_gradient[");
     Serial.print(i);
     Serial.print("].blue = ");
-    Serial.println(cylon_pixels[i].blue);
+    Serial.println(color_gradient[i].blue);
   }
 }

@@ -19,7 +19,6 @@
 #define SIDEBUFFERSIZE (CYLONSIZE-1)
 #define FULLARRAYSIZE (WINDOWSIZE + 2 * SIDEBUFFERSIZE)
 
-
 //#define POT_PIN    2   // Tiny
 #define POT_PIN    A0    // Uno
 
@@ -37,6 +36,21 @@ int cylonDelay;
 
 int cylonIndex = 0;
 int cylonColorMode = 1;
+
+int colorGradientMode = 1;
+int start_red, start_green, start_blue, end_red, end_green, end_blue;
+
+typedef struct
+{
+  int red;
+  int green;
+  int blue;
+} drgb_type;
+
+drgb_type color_gradient[CYLONSIZE];
+
+drgb_type start_color={start_red,start_green,start_blue};
+drgb_type end_color={end_red,end_green,end_blue};
 
 // track direction of cylon right or left to allow for fading trail 
 bool cylonMovingRight = true;
@@ -96,19 +110,6 @@ cylon_palette_type cylon_palette[]=
   {COLOR_GREEN,   COLOR_YELLOW_MED,  COLOR_RED_DIM},      // mode 8
   {COLOR_BLUE,   COLOR_CYAN_MED,  COLOR_GREEN_DIM}       // mode 9
 };
-
-/*================================================================================
- * fillAll
- */
-void fillAll( uint32_t color )
-{
-  int i;
-
-  for (i=0; i<FULLARRAYSIZE; i++)
-  {
-    pixels.setPixelColor(i, color);
-  }
-}
 
 /*================================================
  * Debounce function.
@@ -175,6 +176,7 @@ void setup()
     #endif
     
     pixels.begin();
+    Serial.println("STARTING CYLON NOW!");
     setupCylon();
     delay(1000);
 }
@@ -203,6 +205,8 @@ void setupCylon(){
          pixelState[i] = CYLON_BACKGROUND; 
       }    
     }
+    setupGradient(colorGradientMode);
+    makeGradient(CYLONSIZE);
     showLEDs();
 }
 
@@ -214,23 +218,26 @@ void setupCylon(){
  * Slows the cylon at the edges of the array of leds.
  *===============================================*/ 
 void showLEDs(){
+  
+  /*
   cylon_palette_type palette;
   
   uint32_t cylon_color;
   uint32_t cylon_color_med;
   uint32_t cylon_color_dim;
 
-  /* set our current cylon "palette" */
+  // set our current cylon "palette" 
   palette = cylon_palette[cylonColorMode];
   cylon_color = palette.bright;
   cylon_color_med = palette.med;
   cylon_color_dim = palette.dim;
+  */
   
    // fills the cylon based on value of cylonMovingRight
    // need to improve the math and clean up code that determines what portion of the
    // cylon is full colr, medium, or dim
 
-   int cylonCounter = 0; // track how many pixels have been lit for fading
+  // int cylonCounter = 0; // track how many pixels have been lit for fading
 
    if (cylonMovingRight)
    {
@@ -239,6 +246,8 @@ void showLEDs(){
           int j = i + SIDEBUFFERSIZE;
           if (pixelState[j] == CYLON_EYE)
           {
+            pixels.setPixelColor(i, color_gradient[i].red, color_gradient[i].green, color_gradient[i].blue);
+            /*
             cylonCounter++;
             if (cylonCounter == 1 )
               pixels.setPixelColor(i,cylon_color);
@@ -246,6 +255,7 @@ void showLEDs(){
               pixels.setPixelColor(i,cylon_color_med);   
             else
                pixels.setPixelColor(i,cylon_color_dim); 
+             */
           }
           else
             pixels.setPixelColor(i,bgrd_color); 
@@ -258,6 +268,8 @@ void showLEDs(){
           int j = i + SIDEBUFFERSIZE;
           if (pixelState[j] == CYLON_EYE)
           {
+            pixels.setPixelColor(i, color_gradient[i].red, color_gradient[i].green, color_gradient[i].blue);
+            /*
             cylonCounter++;
             if (cylonCounter == 1)
               pixels.setPixelColor(i,cylon_color);
@@ -265,7 +277,9 @@ void showLEDs(){
               pixels.setPixelColor(i,cylon_color_med);   
             else
                pixels.setPixelColor(i,cylon_color_dim); 
+             */
           }
+          
           else
             pixels.setPixelColor(i,bgrd_color); 
        }
@@ -334,49 +348,6 @@ void moveLEDs(){
 }
 
 /*================================================
- * shiftRIGHT function moves the on/off status of the array of leds to the right,
- * until the far right is on rather than off.
- * 
- * After each shift, showLEDs is called, then we check the pot for speed (delay) changes,
- * and checkButton looks but buttonPressed() to determine cylon color changes.
- *===============================================*/ 
- 
-/*
-void shiftRIGHT(){
-  cylonMovingRight = true;
- // Serial.println("RIGHT");
-  while (pixelState[WINDOWSIZE - 1] == 0)
-  {
-    for (int i = WINDOWSIZE - 1; i > 0; i--)
-    {
-      pixelState[i]=pixelState[i-1];
-    }
-    pixelState[0]=0;
-  }
-}
-*/
-
-
-/*================================================
- * shiftLEFT function does the same as shiftRIGHT, but moves array to the left instead of right
- *===============================================*/ 
- 
-/*
-void shiftLEFT(){
- // Serial.println("LEFT");
-  cylonMovingRight = false;
-  while (pixelState[0] == 0)
-  {
-    for (int i = 0; i < WINDOWSIZE - 1; i++)
-    {
-      pixelState[i]=pixelState[i+1];
-    }
-    pixelState[WINDOWSIZE - 1]=0;
-  }
-}
-*/
-
-/*================================================
  * checkButton function calls buttonPressed() function which uses debouncing to determine if the
  * button was pressed.
  * 
@@ -390,6 +361,20 @@ void shiftLEFT(){
 void checkButton(){
   if (buttonPressed())
   {
+     colorGradientMode++;
+     if (colorGradientMode > 4)
+       colorGradientMode = 1;
+     setupGradient(colorGradientMode);
+     makeGradient(CYLONSIZE);
+     
+     #if 1
+     // Uno debug 
+     Serial.print("colorGradientMode = ");
+     Serial.println(colorGradientMode);
+    #endif  
+  }
+  /*
+  {
      cylonColorMode++;
      if (cylonColorMode > 9)
         cylonColorMode = 1;
@@ -400,6 +385,7 @@ void checkButton(){
     Serial.println(cylonColorMode);
     #endif
   }
+  */
 }
 
 /*================================================
@@ -420,6 +406,65 @@ void checkSpeed(){
     cylonDelay = cylonDelay * edgeDelayMultiplier;
     }
     */
+}
+
+/*================================================
+ * setupGradient function takes the passed value of colorGradientMode
+ * and sets the start and end color values for red, green, and blue to be used
+ * by makeGradient to calculate all of the drgb color values for the whole LED array
+ *===============================================*/ 
+void setupGradient(int gradientMode){
+  switch (gradientMode) {
+  case 1:
+     start_red = 255;
+     start_green = 0;
+     start_blue = 0;
+     end_red = 127;
+     end_green = 255;
+     end_blue = 0;
+     break;
+  case 2:
+     start_red = 255;
+     start_green = 255;
+     start_blue = 255;
+     end_red = 0;
+     end_green = 0;
+     end_blue = 50;
+     break;
+  case 3:
+     start_red = 255;
+     start_green = 0;
+     start_blue = 200;
+     end_red = 127;
+     end_green = 60;
+     end_blue = 0;
+    break;
+  }
+}
+
+/*================================================
+ * makeGrandient function takes the number of LEDs for the gradient array and
+ * calculated the step_size for each color. Then we use a for loop to add that
+ * step_size to the start_color for each color.
+ *===============================================*/ 
+void makeGradient(int divisions){
+  int step_size_red = (end_color.red - start_color.red) / (divisions-1);
+  int step_size_green = (end_color.green - start_color.green) / (divisions-1);
+  int step_size_blue = (end_color.blue - start_color.blue) / (divisions-1); 
+
+  // set start_color for each color and then increment through all but the final division 
+  // based on the step_size for each color.
+  for (int i = 0; i < divisions - 1; i++)
+  {
+    color_gradient[i].red = start_color.red + i * step_size_red;
+    color_gradient[i].green = start_color.green + i * step_size_green;
+    color_gradient[i].blue = start_color.blue + i * step_size_blue;  
+  }
+  
+  // last division is set to the end_color for each color.
+  color_gradient[divisions-1].red = end_color.red;
+  color_gradient[divisions-1].green = end_color.green;
+  color_gradient[divisions-1].blue = end_color.blue;
 }
 
 /*================================================
