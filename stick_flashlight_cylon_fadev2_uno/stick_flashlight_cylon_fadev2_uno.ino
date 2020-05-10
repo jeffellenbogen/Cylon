@@ -430,11 +430,11 @@ void setupGradient(int gradientMode){
      end_color.blue = 255;
      break;
   case 2:
-     //white to black gradient
+     //red to black gradient
      Serial.println("SWITCH gradientMode 2");
      start_color.red = 255;
-     start_color.green = 255;
-     start_color.blue = 255;
+     start_color.green = 0;
+     start_color.blue = 0;
      end_color.red = 0;
      end_color.green = 0;
      end_color.blue = 0;
@@ -442,12 +442,12 @@ void setupGradient(int gradientMode){
   case 3:
      //magenta to cyan
      Serial.println("SWITCH gradientMode 3");
-     start_color.red = 255;
+     start_color.red = 127;
      start_color.green = 0;
      start_color.blue = 255;
      end_color.red = 0;
      end_color.green = 255;
-     end_color.blue = 255;
+     end_color.blue = 127;
     break;
   case 4:
      //green to purple
