@@ -1,5 +1,12 @@
 # Cylon
 
+UPDATED 5/10/2020 1:22 pm
+Successfully created and merged new branch colorGradient which implements the grgb datatype.
+Using this new method for filling the cylon with colors created by makeGradient() function.
+When buttonPressed() occurs, the gradientColorMode increments and setupGradient is called to set up a new start and end value for red, green, and blue colors. 
+makeGradient() calculates and fills the drgb array of CYLONSIZE length with the colors based on the start and end color values changed by setupGradient().
+When showLEDs() is called a new method for filling in the cylon is used. We still use cylonCounter to see how many pixels of cylon have been filled, but instead of filling with a bright, medium, and dim pre-set hex color, we are instead using the drgb array to set each color from the gradient.
+
 UPDATED 5/10/2020 12:02 pm
 Create a drgb datatype that is a struct that will contain the values of red, green, and blue for each item in a pixel array.
 Then create two functions - makeGradient() and printGradient() to set and display the values of red,green, and blue as we move through the array from the start value of each color to the end value of each color.
