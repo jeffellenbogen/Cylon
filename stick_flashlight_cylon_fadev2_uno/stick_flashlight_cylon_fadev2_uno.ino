@@ -15,7 +15,7 @@
 #define BUTTON_PIN 8    // Uno
 
 #define WINDOWSIZE 96
-#define CYLONSIZE 40
+#define CYLONSIZE 20
 #define SIDEBUFFERSIZE (CYLONSIZE-1)
 #define FULLARRAYSIZE (WINDOWSIZE + 2 * SIDEBUFFERSIZE)
 
@@ -38,7 +38,12 @@ int cylonIndex = 0;
 int cylonColorMode = 1;
 
 int colorGradientMode = 1;
-int start_red, start_green, start_blue, end_red, end_green, end_blue;
+int start_red = 255;
+int start_green = 0;
+int start_blue = 0;
+int end_red = 0;
+int end_green = 255;
+int end_blue = 255;
 
 typedef struct
 {
@@ -85,7 +90,7 @@ Adafruit_NeoPixel pixels = Adafruit_NeoPixel(WINDOWSIZE, LED_PIN, NEO_GRB+NEO_KH
 #define COLOR_CYAN_DIM    0x001010
 
 #define COLOR_BLACK   0
-#define COLOR_WHITE   0xFFFFFF
+#define COLOR_WHITE   0x101010
 
 uint32_t bgrd_color = COLOR_BLACK;
 
@@ -96,6 +101,7 @@ typedef struct
   uint32_t dim;
 } cylon_palette_type;
 
+/* not currently using color_palettes for bright, medium, dim. Using colorGradient instead
 cylon_palette_type cylon_palette[]=
 {
   // bright        med                dim
@@ -110,6 +116,8 @@ cylon_palette_type cylon_palette[]=
   {COLOR_GREEN,   COLOR_YELLOW_MED,  COLOR_RED_DIM},      // mode 8
   {COLOR_BLUE,   COLOR_CYAN_MED,  COLOR_GREEN_DIM}       // mode 9
 };
+*/
+
 
 /*================================================
  * Debounce function.
@@ -189,7 +197,7 @@ void setup()
  *===============================================*/ 
 void setupCylon(){
     int i;
-    uint32_t led_color=COLOR_RED;
+    uint32_t led_color=bgrd_color;
     for (int i=0; i < FULLARRAYSIZE; i++)
     {
       if (i < SIDEBUFFERSIZE) // populate the area to the left of the visible window of LEDs with background color
@@ -207,6 +215,7 @@ void setupCylon(){
     }
     setupGradient(colorGradientMode);
     makeGradient(CYLONSIZE);
+  //  printGradient(CYLONSIZE);
     showLEDs();
 }
 
@@ -218,7 +227,6 @@ void setupCylon(){
  * Slows the cylon at the edges of the array of leds.
  *===============================================*/ 
 void showLEDs(){
-  
   /*
   cylon_palette_type palette;
   
@@ -237,7 +245,7 @@ void showLEDs(){
    // need to improve the math and clean up code that determines what portion of the
    // cylon is full colr, medium, or dim
 
-  // int cylonCounter = 0; // track how many pixels have been lit for fading
+   int cylonCounter = 0; // track how many pixels have been lit for fading
 
    if (cylonMovingRight)
    {
@@ -246,9 +254,10 @@ void showLEDs(){
           int j = i + SIDEBUFFERSIZE;
           if (pixelState[j] == CYLON_EYE)
           {
-            pixels.setPixelColor(i, color_gradient[i].red, color_gradient[i].green, color_gradient[i].blue);
-            /*
-            cylonCounter++;
+            //fill the cylon from the start_color moving towards end_color. cylonCounter tracks how many pixels of cylon have been filled so far.
+            pixels.setPixelColor(i, color_gradient[cylonCounter].red, color_gradient[cylonCounter].green, color_gradient[cylonCounter].blue);
+            cylonCounter++;     
+            /* This is the old method for filling the cylon using set bright, med, dim colors for various parts of the cylon
             if (cylonCounter == 1 )
               pixels.setPixelColor(i,cylon_color);
             else if (cylonCounter <= .4*CYLONSIZE)
@@ -268,9 +277,10 @@ void showLEDs(){
           int j = i + SIDEBUFFERSIZE;
           if (pixelState[j] == CYLON_EYE)
           {
-            pixels.setPixelColor(i, color_gradient[i].red, color_gradient[i].green, color_gradient[i].blue);
+             pixels.setPixelColor(i, color_gradient[cylonCounter].red, color_gradient[cylonCounter].green, color_gradient[cylonCounter].blue);
+             cylonCounter++;           
             /*
-            cylonCounter++;
+            
             if (cylonCounter == 1)
               pixels.setPixelColor(i,cylon_color);
             else if (cylonCounter <= .4*CYLONSIZE)
@@ -362,18 +372,19 @@ void checkButton(){
   if (buttonPressed())
   {
      colorGradientMode++;
-     if (colorGradientMode > 4)
+     if (colorGradientMode > 3)
        colorGradientMode = 1;
      setupGradient(colorGradientMode);
      makeGradient(CYLONSIZE);
      
-     #if 1
+     #if 0
      // Uno debug 
      Serial.print("colorGradientMode = ");
      Serial.println(colorGradientMode);
+     printGradient(CYLONSIZE);
     #endif  
   }
-  /*
+  /* This is the older method for incrementing between the colorPalettes of bright, med, dim
   {
      cylonColorMode++;
      if (cylonColorMode > 9)
@@ -394,50 +405,46 @@ void checkButton(){
  *===============================================*/ 
 void checkSpeed(){
   int pot_val;
-  int edgeDelayMultiplier = 1.80;
   pot_val = analogRead(POT_PIN);
   cylonDelay = map (pot_val,0,1024,CYLON_MAX_DELAY,CYLON_MIN_DELAY); //pot is backwards, so swap MAX and MIN to have faster delay when turned to the right
   cylonDelay = constrain(cylonDelay,CYLON_MIN_DELAY,CYLON_MAX_DELAY);
 
-  /*
-  //multiply delay by edgeDelayMultiplier if cylon is at an edge to slow it momentarily.
-  if (cylonHeadAtEdge == true)
-    {
-    cylonDelay = cylonDelay * edgeDelayMultiplier;
-    }
-    */
 }
 
 /*================================================
  * setupGradient function takes the passed value of colorGradientMode
  * and sets the start and end color values for red, green, and blue to be used
  * by makeGradient to calculate all of the drgb color values for the whole LED array
+ * THIS is where we can create NEW gradients to be used to color the cylon
  *===============================================*/ 
 void setupGradient(int gradientMode){
   switch (gradientMode) {
   case 1:
-     start_red = 255;
-     start_green = 0;
-     start_blue = 0;
-     end_red = 127;
-     end_green = 255;
-     end_blue = 0;
+     Serial.println("SWITCH gradientMode 1");
+     start_color.red = 255;
+     start_color.green = 0;
+     start_color.blue = 0;
+     end_color.red = 0;
+     end_color.green = 0;
+     end_color.blue = 255;
      break;
   case 2:
-     start_red = 255;
-     start_green = 255;
-     start_blue = 255;
-     end_red = 0;
-     end_green = 0;
-     end_blue = 50;
+     Serial.println("SWITCH gradientMode 2");
+     start_color.red = 0;
+     start_color.green = 255;
+     start_color.blue = 255;
+     end_color.red = 100;
+     end_color.green = 0;
+     end_color.blue = 200;
      break;
   case 3:
-     start_red = 255;
-     start_green = 0;
-     start_blue = 200;
-     end_red = 127;
-     end_green = 60;
-     end_blue = 0;
+     Serial.println("SWITCH gradientMode 3");
+     start_color.red = 200;
+     start_color.green = 180;
+     start_color.blue = 0;
+     end_color.red = 30;
+     end_color.green = 255;
+     end_color.blue = 0;
     break;
   }
 }
@@ -465,6 +472,30 @@ void makeGradient(int divisions){
   color_gradient[divisions-1].red = end_color.red;
   color_gradient[divisions-1].green = end_color.green;
   color_gradient[divisions-1].blue = end_color.blue;
+}
+
+/*================================================
+ * printGradient function uses Serial.print statements to display values of the red, green, blue 
+ * for each item in the LED array
+ *===============================================*/ 
+void printGradient(int divisions){
+  for (int i = 0; i < divisions; i++)
+  {
+    Serial.print("color_gradient[");
+    Serial.print(i);
+    Serial.print("].red = ");
+    Serial.print(color_gradient[i].red);
+
+    Serial.print(" color_gradient[");
+    Serial.print(i);
+    Serial.print("].green = ");
+    Serial.print(color_gradient[i].green);
+
+    Serial.print(" color_gradient[");
+    Serial.print(i);
+    Serial.print("].blue = ");
+    Serial.println(color_gradient[i].blue);
+  }
 }
 
 /*================================================
