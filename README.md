@@ -1,4 +1,21 @@
 # Cylon
+UPDATED 5/14/2020 4:11 pm
+Created method for dividing cylon colors into a gradient with multiple colors spread across the cylon eye. CYLONSIZE is now defined based on the NUM_GRADIENT_COLORS and GRADIENT_COLOR_SPACING. Based on how many colors and the number of pixels between the colors, the cylon is established. This will work nicely on larger LED strips, but might not work as well on small strips like the TinyStrip with the TinyAT85.
+setupGradient() function now takes the colorGradientMode set by the number of buttonPresses and sets the various gradient colors based on what mode we are in.
+NOTE: The number of colors used in setupGradient should match the NUM_GRADIENT_COLORS defined at the start. There will always be a start_color and end_color and x number of colors in between. Each of these colors is a drgb_type struct with int values for red, green, and blue. start_color.red = 255 for example sets the red value of the first color of the gradient. mid_color2.blue = 0 would set the blue to 0 on the second mid color of the gradient.
+makeGradient() now has parameters that are passed including the color_gradient array, number of LEDs or division to cover, and two drgb_type colors for the start and end point of that gradient. 
+makeGradient() can be called on subsets of the whole cylon using pointers. The cylon is divided into overlapping zones based on GRADIENT_COLOR_SPACING and NUM_GRADIENT_COLORS. This allows the gradient to smoothly fade across each gradient color that is set.
+
+EXAMPLE:
+//1st call to makeGradient() calculates colors for the first section of the cylon
+makeGradient(color_gradient, (2 + GRADIENT_COLOR_SPACING), start_color, mid_color1);  
+//2nd call to makeGradient() starts by overlapping with the end of the last section of the cylon
+makeGradient(&(color_gradient[(1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color1, mid_color2); 
+//3rd call overlaps the previous section and completes this example with NUM_GRADIENT_COLOR = 4
+makeGradient(&(color_gradient[2 * (1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color2, end_color);
+
+printGradient() is also called in setupGradient and prints out the values of each drgb_type color for debugging purposes.
+
 
 UPDATED 5/10/2020 1:22 pm
 Successfully created and merged new branch colorGradient which implements the grgb datatype.
