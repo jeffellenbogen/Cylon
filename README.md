@@ -8,10 +8,15 @@ makeGradient() can be called on subsets of the whole cylon using pointers. The c
 
 EXAMPLE:
 //1st call to makeGradient() calculates colors for the first section of the cylon
+
 makeGradient(color_gradient, (2 + GRADIENT_COLOR_SPACING), start_color, mid_color1);  
+
 //2nd call to makeGradient() starts by overlapping with the end of the last section of the cylon
-makeGradient(&(color_gradient[(1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color1, mid_color2); 
+
+makeGradient(&(color_gradient[(1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color1, mid_color2);
+
 //3rd call overlaps the previous section and completes this example with NUM_GRADIENT_COLOR = 4
+
 makeGradient(&(color_gradient[2 * (1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color2, end_color);
 
 printGradient() is also called in setupGradient and prints out the values of each drgb_type color for debugging purposes.
