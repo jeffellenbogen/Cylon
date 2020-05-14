@@ -17,7 +17,7 @@
 #define WINDOWSIZE 96
 
 #define NUM_GRADIENT_COLORS 4
-#define GRADIENT_COLOR_SPACING 6
+#define GRADIENT_COLOR_SPACING 10
 
 #define CYLONSIZE (NUM_GRADIENT_COLORS + GRADIENT_COLOR_SPACING * (NUM_GRADIENT_COLORS - 1))
 #define SIDEBUFFERSIZE (CYLONSIZE-1)
@@ -413,7 +413,7 @@ void setupGradient(int gradientMode){
   switch (gradientMode) {
   case 1:
     start_color.red = 46;
-    start_color.green = 149;
+    start_color.green = 0;
     start_color.blue = 255;
 
     mid_color1.red = 247;
@@ -430,8 +430,8 @@ void setupGradient(int gradientMode){
     break;
   case 2:
     start_color.red = 255;
-    start_color.green = 255;
-    start_color.blue = 255;
+    start_color.green = 20;
+    start_color.blue = 50;
 
     mid_color1.red = 0;
     mid_color1.green = 255;
@@ -446,9 +446,9 @@ void setupGradient(int gradientMode){
     end_color.blue=120;
     break;
   case 3:
-    start_color.red = 221;
-    start_color.green = 20;
-    start_color.blue = 112;
+    start_color.red = 255;
+    start_color.green = 200;
+    start_color.blue = 0;
 
     mid_color1.red = 0;
     mid_color1.green = 50;
@@ -463,9 +463,9 @@ void setupGradient(int gradientMode){
     end_color.blue= 40;
     break;
   case 4:
-    start_color.red = 49;
-    start_color.green = 56;
-    start_color.blue = 102;
+    start_color.red = 150;
+    start_color.green = 0;
+    start_color.blue = 255;
 
     mid_color1.red = 80;
     mid_color1.green = 64;
