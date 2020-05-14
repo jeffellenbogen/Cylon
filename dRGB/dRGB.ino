@@ -1,12 +1,5 @@
-#define CYLONSIZE 6
+#define CYLONSIZE 10
 
-int start_red = 255;
-int start_green = 0;
-int start_blue = 0;
-
-int end_red = 127;
-int end_green = 255;
-int end_blue = 0;
 
 typedef struct
 {
@@ -17,10 +10,28 @@ typedef struct
 
 drgb_type color_gradient[CYLONSIZE];
 
-drgb_type start_color={start_red,start_green,start_blue};
-drgb_type end_color={end_red,end_green,end_blue};
 
 void setup() {
+  
+  drgb_type start_color, mid_color1, mid_color2, end_color;
+
+  start_color.red = 255;
+  start_color.green = 0;
+  start_color.blue = 0;
+
+  end_color.red = 255;
+  end_color.green = 0;
+  end_color.blue=0;
+
+  mid_color1.red = 0;
+  mid_color1.green = 255;
+  mid_color1.blue = 0;
+
+  mid_color2.red = 0;
+  mid_color2.green = 0;
+  mid_color2.blue = 255;
+  
+   
   Serial.begin(9600);
   Serial.print("start_color: start_red = ");
   Serial.print(start_color.red);  
@@ -36,7 +47,20 @@ void setup() {
   Serial.println(end_color.blue); 
   Serial.println();
 
-  makeGradient(CYLONSIZE);
+  //makeGradient(color_gradient, CYLONSIZE, start_color, end_color);
+  //printGradient(CYLONSIZE);
+
+  //In this example we have 10 pixels transitioning between 4 drgb colors.
+  //Each call to makeGradient is going to have overlapping end and start references to the whole array,
+  //so that the drgb colors don't repeat between two pixels and rather a single inflection points of the colors as they transition
+  //For any array we need to know how many reference colors and how many pixels in between
+  //In this example we have 4 reference colors with 2 LEDs in between each. 
+  // (# ref colors + size of spacing * (# ref colors - 1))
+  // 4 + 2 * 3
+  // 10 total pixels
+  makeGradient(color_gradient, 4, start_color, mid_color1);  // pixels 0 - 3
+  makeGradient(&(color_gradient[3]), 4, mid_color1, mid_color2); // pixels 3 - 6
+  makeGradient(&(color_gradient[6]), 4, mid_color2, end_color); // pixels 6 - 9
   printGradient(CYLONSIZE);
 }
 
@@ -53,7 +77,7 @@ void loop() {
  * step_size to the start_color for each color. 
  * 
  */
-void makeGradient(int divisions){
+void makeGradient(drgb_type passsed_grad[], int divisions, drgb_type start_color, drgb_type end_color){
   int step_size_red = (end_color.red - start_color.red) / (divisions-1);
   int step_size_green = (end_color.green - start_color.green) / (divisions-1);
   int step_size_blue = (end_color.blue - start_color.blue) / (divisions-1); 
@@ -62,15 +86,16 @@ void makeGradient(int divisions){
   // based on the step_size for each color.
   for (int i = 0; i < divisions - 1; i++)
   {
-    color_gradient[i].red = start_color.red + i * step_size_red;
-    color_gradient[i].green = start_color.green + i * step_size_green;
-    color_gradient[i].blue = start_color.blue + i * step_size_blue;  
+    passsed_grad[i].red = start_color.red + i * step_size_red;
+    passsed_grad[i].green = start_color.green + i * step_size_green;
+    passsed_grad[i].blue = start_color.blue + i * step_size_blue;  
   }
   
   // last division is set to the end_color for each color.
-  color_gradient[divisions-1].red = end_color.red;
-  color_gradient[divisions-1].green = end_color.green;
-  color_gradient[divisions-1].blue = end_color.blue;
+  passsed_grad[divisions-1].red = end_color.red;
+  passsed_grad[divisions-1].green = end_color.green;
+  passsed_grad[divisions-1].blue = end_color.blue;
+
 }
 
 /*
