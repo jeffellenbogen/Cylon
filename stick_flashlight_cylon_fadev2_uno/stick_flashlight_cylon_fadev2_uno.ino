@@ -17,7 +17,7 @@
 #define WINDOWSIZE 96
 
 #define NUM_GRADIENT_COLORS 4
-#define GRADIENT_COLOR_SPACING 3
+#define GRADIENT_COLOR_SPACING 6
 
 #define CYLONSIZE (NUM_GRADIENT_COLORS + GRADIENT_COLOR_SPACING * (NUM_GRADIENT_COLORS - 1))
 #define SIDEBUFFERSIZE (CYLONSIZE-1)
@@ -210,7 +210,6 @@ void setupCylon(){
       }    
     }
     setupGradient(colorGradientMode);
-  //  printGradient(CYLONSIZE);
     showLEDs();
 }
 
@@ -371,13 +370,7 @@ void checkButton(){
        colorGradientMode = 1;
      setupGradient(colorGradientMode);
      
-     
-     #if 0
-     // Uno debug 
-     Serial.print("colorGradientMode = ");
-     Serial.println(colorGradientMode);
-     printGradient(CYLONSIZE);
-    #endif  
+    
   }
   /* This is the older method for incrementing between the colorPalettes of bright, med, dim
   {
@@ -419,21 +412,21 @@ void setupGradient(int gradientMode){
 
   switch (gradientMode) {
   case 1:
-    start_color.red = 255;
-    start_color.green = 0;
-    start_color.blue = 0;
+    start_color.red = 46;
+    start_color.green = 149;
+    start_color.blue = 255;
 
-    mid_color1.red = 0;
-    mid_color1.green = 255;
-    mid_color1.blue = 0;
+    mid_color1.red = 247;
+    mid_color1.green = 220;
+    mid_color1.blue = 104;
 
-    mid_color2.red = 127;
-    mid_color2.green = 40;
-    mid_color2.blue = 255;
+    mid_color2.red = 244;
+    mid_color2.green = 108;
+    mid_color2.blue = 63;
 
-    end_color.red = 255;
-    end_color.green = 0;
-    end_color.blue=0;
+    end_color.red = 167;
+    end_color.green = 34;
+    end_color.blue = 111;
     break;
   case 2:
     start_color.red = 255;
@@ -453,38 +446,38 @@ void setupGradient(int gradientMode){
     end_color.blue=120;
     break;
   case 3:
-    start_color.red = 0;
-    start_color.green = 120;
-    start_color.blue = 255;
-
-    mid_color1.red = 200;
-    mid_color1.green = 20;
-    mid_color1.blue = 160;
-
-    mid_color2.red = 140;
-    mid_color2.green = 50;
-    mid_color2.blue = 255;
-
-    end_color.red = 0;
-    end_color.green = 0;
-    end_color.blue=255;
-    break;
-  case 4:
-    start_color.red = 255;
-    start_color.green = 0;
-    start_color.blue = 0;
+    start_color.red = 221;
+    start_color.green = 20;
+    start_color.blue = 112;
 
     mid_color1.red = 0;
-    mid_color1.green = 255;
-    mid_color1.blue = 0;
+    mid_color1.green = 50;
+    mid_color1.blue = 255;
 
-    mid_color2.red = 0;
-    mid_color2.green = 0;
-    mid_color2.blue = 255;
+    mid_color2.red = 160;
+    mid_color2.green = 255;
+    mid_color2.blue = 0;
 
     end_color.red = 255;
-    end_color.green = 0;
-    end_color.blue=120;
+    end_color.green = 227;
+    end_color.blue= 40;
+    break;
+  case 4:
+    start_color.red = 49;
+    start_color.green = 56;
+    start_color.blue = 102;
+
+    mid_color1.red = 80;
+    mid_color1.green = 64;
+    mid_color1.blue = 154;
+
+    mid_color2.red = 150;
+    mid_color2.green = 78;
+    mid_color2.blue = 194;
+
+    end_color.red = 255;
+    end_color.green = 123;
+    end_color.blue=255;
     break;
    default:
     start_color.red = 255;
@@ -505,9 +498,12 @@ void setupGradient(int gradientMode){
     break;
   }
   
-  makeGradient(color_gradient, 2 + GRADIENT_COLOR_SPACING, start_color, mid_color1);  // pixels 0 - 3
-  makeGradient(&(color_gradient[2 * (1+GRADIENT_COLOR_SPACING)]), 2 + GRADIENT_COLOR_SPACING, mid_color1, mid_color2); // pixels 3 - 6
-  makeGradient(&(color_gradient[3 * (1+GRADIENT_COLOR_SPACING)]), 2 + GRADIENT_COLOR_SPACING, mid_color2, end_color); // pixels 6 - 9
+ 
+  makeGradient(color_gradient, (2 + GRADIENT_COLOR_SPACING), start_color, mid_color1);  // pixels 0 - 3
+  makeGradient(&(color_gradient[(1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color1, mid_color2); // pixels 3 - 6
+  makeGradient(&(color_gradient[2 * (1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color2, end_color); // pixels 6 - 9
+  
+  //printGradient(CYLONSIZE);
 }
 
 /*================================================
@@ -540,8 +536,14 @@ void makeGradient(drgb_type passsed_grad[], int divisions, drgb_type start_color
  * for each item in the LED array
  *===============================================*/ 
 void printGradient(int divisions){
+  Serial.println("");
+  Serial.print("colorGradientMode = ");
+  Serial.println(colorGradientMode);
+  Serial.println("***********************");
   for (int i = 0; i < divisions; i++)
   {
+    if ((i%(1+GRADIENT_COLOR_SPACING) == 0 ))
+      Serial.println("GRADIENT COLOR");
     Serial.print("color_gradient[");
     Serial.print(i);
     Serial.print("].red = ");
@@ -556,6 +558,8 @@ void printGradient(int divisions){
     Serial.print(i);
     Serial.print("].blue = ");
     Serial.println(color_gradient[i].blue);
+    if ((i%(1+GRADIENT_COLOR_SPACING) == 0 || (i%(1+GRADIENT_COLOR_SPACING) == 3)))
+      Serial.println("");
   }
 }
 
