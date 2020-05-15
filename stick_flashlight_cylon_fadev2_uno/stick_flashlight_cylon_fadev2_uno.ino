@@ -463,21 +463,21 @@ void setupGradient(int gradientMode){
     end_color.blue= 40;
     break;
   case 4:
-    start_color.red = 150;
+    start_color.red = 255;
     start_color.green = 0;
-    start_color.blue = 255;
+    start_color.blue = 50;
 
-    mid_color1.red = 80;
-    mid_color1.green = 64;
-    mid_color1.blue = 154;
+    mid_color1.red = 255;
+    mid_color1.green = 176;
+    mid_color1.blue = 50;
 
-    mid_color2.red = 150;
-    mid_color2.green = 78;
-    mid_color2.blue = 194;
+    mid_color2.red = 255;
+    mid_color2.green = 150;
+    mid_color2.blue = 50;
 
     end_color.red = 255;
-    end_color.green = 123;
-    end_color.blue=255;
+    end_color.green = 255;
+    end_color.blue=0;
     break;
    default:
     start_color.red = 255;
