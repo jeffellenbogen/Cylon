@@ -97,6 +97,14 @@ typedef struct
   uint32_t dim;
 } cylon_palette_type;
 
+typedef struct
+{
+  int red_drgb;
+  int green_drgb;
+  int blue_grgb;
+} drgb_color_type;
+
+
 /* not currently using color_palettes for bright, medium, dim. Using colorGradient instead
 cylon_palette_type cylon_palette[]=
 {
