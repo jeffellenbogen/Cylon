@@ -16,8 +16,9 @@
 
 #define WINDOWSIZE 96
 
-#define NUM_GRADIENT_COLORS 4
-#define GRADIENT_COLOR_SPACING 3
+// changing the number of colors requires a lot of other changes, ie: create new mid_colors throughout the programa
+#define NUM_GRADIENT_COLORS 5  
+#define GRADIENT_COLOR_SPACING 10
 
 #define CYLONSIZE (NUM_GRADIENT_COLORS + GRADIENT_COLOR_SPACING * (NUM_GRADIENT_COLORS - 1))
 #define SIDEBUFFERSIZE (CYLONSIZE-1)
@@ -39,19 +40,9 @@ cylon_state_type pixelState[FULLARRAYSIZE];
 int cylonDelay;
 
 int cylonIndex = 0;
-int cylonColorMode = 1;
+//int cylonColorMode = 1;
 
-int colorGradientMode = 1;
-
-
-typedef struct
-{
-  int red;
-  int green;
-  int blue;
-} drgb_type;
-
-drgb_type color_gradient[CYLONSIZE];
+int colorGradientMode = 0;
 
 // track direction of cylon right or left to allow for fading trail 
 bool cylonMovingRight = true;
@@ -92,28 +83,58 @@ uint32_t bgrd_color = COLOR_BLACK;
 
 typedef struct
 {
-  uint32_t bright;
-  uint32_t med;
-  uint32_t dim;
-} cylon_palette_type;
+  int red;
+  int green;
+  int blue;
+} drgb_type;
 
-/* not currently using color_palettes for bright, medium, dim. Using colorGradient instead
-cylon_palette_type cylon_palette[]=
+drgb_type cylon_gradient[CYLONSIZE];
+
+//initialize drgb_type structs of a variety of colors to use for gradients
+drgb_type drgb_red={255, 0, 0};
+drgb_type drgb_blue={0,0,255};
+drgb_type drgb_green={0,255,0};
+drgb_type drgb_pink={200,0, 170};
+drgb_type drgb_black={0,0,0};
+
+drgb_type drbg_skyBlue={101, 222, 241};
+drgb_type drbg_safetyOrange={249, 105, 0};
+drgb_type drgb_blueMunsell={6, 141, 157};
+drgb_type drgb_liberty={6, 141, 157};
+
+drgb_type drgb_magneta={211, 12, 123};
+drgb_type drgb_mistyRose={255, 227, 220};
+drgb_type drgb_arcticLime={210, 255, 40};
+drgb_type drgb_sinopia={200, 76, 9};
+drgb_type drgb_darkSienna={66, 2, 23};
+
+drgb_type drgb_titaniumYellow={244, 228, 9};
+drgb_type drgb_orangeYellow={238, 186, 11};
+drgb_type drgb_ochre={195, 111, 9};
+drgb_type drgb_rust={166, 60, 6};
+drgb_type drgb_bloodRed={113, 0, 0};
+
+
+typedef struct
 {
-  // bright        med                dim
-  {COLOR_RED,     COLOR_RED_MED,     COLOR_RED_DIM},      // mode 0...currently unused as logic is "1" based
-  {COLOR_RED,     COLOR_RED_MED,     COLOR_RED_DIM},      // mode 1
-  {COLOR_GREEN,   COLOR_GREEN_MED,   COLOR_GREEN_DIM},    // mode 2
-  {COLOR_BLUE,    COLOR_BLUE_MED,    COLOR_BLUE_DIM},     // mode 3
-  {COLOR_MAGENTA, COLOR_MAGENTA_MED, COLOR_MAGENTA_DIM},  // mode 4
-  {COLOR_YELLOW,  COLOR_YELLOW_MED,  COLOR_YELLOW_DIM},   // mode 5
-  {COLOR_CYAN,    COLOR_CYAN_MED,    COLOR_CYAN_DIM},     // mode 6
-  {COLOR_RED,     COLOR_MAGENTA_MED, COLOR_CYAN_DIM},     // mode 7
-  {COLOR_GREEN,   COLOR_YELLOW_MED,  COLOR_RED_DIM},      // mode 8
-  {COLOR_BLUE,   COLOR_CYAN_MED,  COLOR_GREEN_DIM}       // mode 9
-};
-*/
+  drgb_type start_color;
+  drgb_type mid_color1;
+  drgb_type mid_color2;
+  drgb_type mid_color3;
+  drgb_type end_color;
+} gradient_palette_type;
 
+
+gradient_palette_type gradient_palette[]=
+{ //start_color,  mid_color1,   mid_color2,   mid_color3,     end_color
+   {drgb_red,     drgb_pink,     drgb_green,   drgb_green,     drgb_green},  // palette 0
+   {drgb_pink,    drgb_blue,   drgb_blue,      drgb_blue,      drgb_blue},  // palette 1
+   {drgb_red,     drgb_blue,     drgb_blue,    drgb_blue,     drgb_red},  // palette 2
+   {drgb_red,     drgb_red,     drgb_red,     drgb_red,     drgb_green},  // palette 3
+   {drgb_bloodRed, drgb_rust,   drgb_ochre,   drgb_orangeYellow,  drgb_titaniumYellow},  // palette 4
+   {drbg_safetyOrange,    drgb_blueMunsell,    drgb_liberty,    drbg_skyBlue,      drbg_skyBlue},   // palette 5
+   {drgb_magneta,    drgb_mistyRose,    drgb_arcticLime,    drgb_sinopia,      drgb_darkSienna}   // palette 6
+};
 
 /*================================================
  * Debounce function.
@@ -182,7 +203,10 @@ void setup()
     pixels.begin();
     Serial.println("STARTING CYLON NOW!");
     setupCylon();
+    Serial.print("colorGradientMode: ");
+    Serial.println(colorGradientMode);
     delay(1000);
+
 }
 
 
@@ -249,7 +273,7 @@ void showLEDs(){
           if (pixelState[j] == CYLON_EYE)
           {
             //fill the cylon from the start_color moving towards end_color. cylonCounter tracks how many pixels of cylon have been filled so far.
-            pixels.setPixelColor(i, color_gradient[cylonCounter].red, color_gradient[cylonCounter].green, color_gradient[cylonCounter].blue);
+            pixels.setPixelColor(i, cylon_gradient[cylonCounter].red, cylon_gradient[cylonCounter].green, cylon_gradient[cylonCounter].blue);
             cylonCounter++;     
             /* This is the old method for filling the cylon using set bright, med, dim colors for various parts of the cylon
             if (cylonCounter == 1 )
@@ -271,7 +295,7 @@ void showLEDs(){
           int j = i + SIDEBUFFERSIZE;
           if (pixelState[j] == CYLON_EYE)
           {
-             pixels.setPixelColor(i, color_gradient[cylonCounter].red, color_gradient[cylonCounter].green, color_gradient[cylonCounter].blue);
+             pixels.setPixelColor(i, cylon_gradient[cylonCounter].red, cylon_gradient[cylonCounter].green, cylon_gradient[cylonCounter].blue);
              cylonCounter++;           
             /*
             
@@ -363,14 +387,20 @@ void moveLEDs(){
  * 
  *===============================================*/ 
 void checkButton(){
+  int gradientSize = sizeof(gradient_palette) / sizeof(gradient_palette_type);
+     //Serial.print("gradientSize: ");
+     //Serial.print(gradientSize);
+  
   if (buttonPressed())
-  {
+  { 
      colorGradientMode++;
-     if (colorGradientMode > 4)
-       colorGradientMode = 1;
+     
+     if (colorGradientMode >= gradientSize)
+       colorGradientMode = 0;
      setupGradient(colorGradientMode);
      
-    
+     Serial.print("colorGradientMode: ");
+     Serial.println(colorGradientMode);
   }
   /* This is the older method for incrementing between the colorPalettes of bright, med, dim
   {
@@ -406,102 +436,21 @@ void checkSpeed(){
  * THIS is where we can create NEW gradients to be used to color the cylon
  *===============================================*/ 
 void setupGradient(int gradientMode){
-  
+
   // define NUM_GRADIENT_COLORS is based on how many colors will be in gradient below
-  drgb_type start_color, mid_color1, mid_color2, end_color;
-
-  switch (gradientMode) {
-  case 1:
-    start_color.red = 46;
-    start_color.green = 0;
-    start_color.blue = 255;
-
-    mid_color1.red = 247;
-    mid_color1.green = 220;
-    mid_color1.blue = 104;
-
-    mid_color2.red = 244;
-    mid_color2.green = 108;
-    mid_color2.blue = 63;
-
-    end_color.red = 167;
-    end_color.green = 34;
-    end_color.blue = 111;
-    break;
-  case 2:
-    start_color.red = 255;
-    start_color.green = 20;
-    start_color.blue = 50;
-
-    mid_color1.red = 0;
-    mid_color1.green = 255;
-    mid_color1.blue = 0;
-
-    mid_color2.red = 127;
-    mid_color2.green = 200;
-    mid_color2.blue = 0;
-
-    end_color.red = 255;
-    end_color.green = 0;
-    end_color.blue=120;
-    break;
-  case 3:
-    start_color.red = 255;
-    start_color.green = 200;
-    start_color.blue = 0;
-
-    mid_color1.red = 0;
-    mid_color1.green = 50;
-    mid_color1.blue = 255;
-
-    mid_color2.red = 160;
-    mid_color2.green = 255;
-    mid_color2.blue = 0;
-
-    end_color.red = 255;
-    end_color.green = 227;
-    end_color.blue= 40;
-    break;
-  case 4:
-    start_color.red = 255;
-    start_color.green = 0;
-    start_color.blue = 50;
-
-    mid_color1.red = 255;
-    mid_color1.green = 176;
-    mid_color1.blue = 50;
-
-    mid_color2.red = 255;
-    mid_color2.green = 150;
-    mid_color2.blue = 50;
-
-    end_color.red = 255;
-    end_color.green = 255;
-    end_color.blue=0;
-    break;
-   default:
-    start_color.red = 255;
-    start_color.green = 255;
-    start_color.blue = 255;
-
-    mid_color1.red = 0;
-    mid_color1.green = 0;
-    mid_color1.blue = 0;
-
-    mid_color2.red = 255;
-    mid_color2.green = 0;
-    mid_color2.blue = 0;
-
-    end_color.red = 0;
-    end_color.green = 0;
-    end_color.blue=255;
-    break;
-  }
+  drgb_type start_color, mid_color1, mid_color2, mid_color3, end_color;
   
+  start_color = gradient_palette[gradientMode].start_color;
+  mid_color1 = gradient_palette[gradientMode].mid_color1;
+  mid_color2 = gradient_palette[gradientMode].mid_color2;
+  mid_color3 = gradient_palette[gradientMode].mid_color3;
+  end_color = gradient_palette[gradientMode].end_color;
+
  
-  makeGradient(color_gradient, (2 + GRADIENT_COLOR_SPACING), start_color, mid_color1);  // pixels 0 - 3
-  makeGradient(&(color_gradient[(1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color1, mid_color2); // pixels 3 - 6
-  makeGradient(&(color_gradient[2 * (1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color2, end_color); // pixels 6 - 9
+  makeGradient(cylon_gradient, (2 + GRADIENT_COLOR_SPACING), start_color, mid_color1);  
+  makeGradient(&(cylon_gradient[(1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color1, mid_color2); 
+  makeGradient(&(cylon_gradient[(1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color2, mid_color3); 
+  makeGradient(&(cylon_gradient[2 * (1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color3, end_color); 
   
   //printGradient(CYLONSIZE);
 }
@@ -544,20 +493,20 @@ void printGradient(int divisions){
   {
     if ((i%(1+GRADIENT_COLOR_SPACING) == 0 ))
       Serial.println("GRADIENT COLOR");
-    Serial.print("color_gradient[");
+    Serial.print("cylon_gradient[");
     Serial.print(i);
     Serial.print("].red = ");
-    Serial.print(color_gradient[i].red);
+    Serial.print(cylon_gradient[i].red);
 
-    Serial.print(" color_gradient[");
+    Serial.print(" cylon_gradient[");
     Serial.print(i);
     Serial.print("].green = ");
-    Serial.print(color_gradient[i].green);
+    Serial.print(cylon_gradient[i].green);
 
-    Serial.print(" color_gradient[");
+    Serial.print(" cylon_gradient[");
     Serial.print(i);
     Serial.print("].blue = ");
-    Serial.println(color_gradient[i].blue);
+    Serial.println(cylon_gradient[i].blue);
     if ((i%(1+GRADIENT_COLOR_SPACING) == 0 || (i%(1+GRADIENT_COLOR_SPACING) == 3)))
       Serial.println("");
   }
