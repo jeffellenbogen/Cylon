@@ -16,8 +16,9 @@
 
 #define WINDOWSIZE 96
 
-#define NUM_GRADIENT_COLORS 4
-#define GRADIENT_COLOR_SPACING 3
+// changing the number of colors requires a lot of other changes, ie: create new mid_colors throughout the programa
+#define NUM_GRADIENT_COLORS 5  
+#define GRADIENT_COLOR_SPACING 10
 
 #define CYLONSIZE (NUM_GRADIENT_COLORS + GRADIENT_COLOR_SPACING * (NUM_GRADIENT_COLORS - 1))
 #define SIDEBUFFERSIZE (CYLONSIZE-1)
@@ -96,22 +97,43 @@ drgb_type drgb_green={0,255,0};
 drgb_type drgb_pink={200,0, 170};
 drgb_type drgb_black={0,0,0};
 
+drgb_type drbg_skyBlue={101, 222, 241};
+drgb_type drbg_safetyOrange={249, 105, 0};
+drgb_type drgb_blueMunsell={6, 141, 157};
+drgb_type drgb_liberty={6, 141, 157};
+
+drgb_type drgb_magneta={211, 12, 123};
+drgb_type drgb_mistyRose={255, 227, 220};
+drgb_type drgb_arcticLime={210, 255, 40};
+drgb_type drgb_sinopia={200, 76, 9};
+drgb_type drgb_darkSienna={66, 2, 23};
+
+drgb_type drgb_titaniumYellow={244, 228, 9};
+drgb_type drgb_orangeYellow={238, 186, 11};
+drgb_type drgb_ochre={195, 111, 9};
+drgb_type drgb_rust={166, 60, 6};
+drgb_type drgb_bloodRed={113, 0, 0};
+
+
 typedef struct
 {
   drgb_type start_color;
   drgb_type mid_color1;
   drgb_type mid_color2;
+  drgb_type mid_color3;
   drgb_type end_color;
 } gradient_palette_type;
 
 
 gradient_palette_type gradient_palette[]=
-{ //start_color,  mid_color1,   mid_color2,   end_color
-   {drgb_pink,    drgb_black,   drgb_red,     drgb_green},  // palette 0
-   {drgb_pink,    drgb_green,   drgb_pink,    drgb_green},  // palette 1
-   {drgb_blue,    drgb_red,     drgb_black,   drgb_black},  // palette 2
-   {drgb_red,     drgb_green,   drgb_green,   drgb_green},  // palette 3
-   {drgb_pink,    drgb_blue,    drgb_blue,    drgb_blue}    // palette 4
+{ //start_color,  mid_color1,   mid_color2,   mid_color3,     end_color
+   {drgb_red,     drgb_pink,     drgb_green,   drgb_green,     drgb_green},  // palette 0
+   {drgb_pink,    drgb_blue,   drgb_blue,      drgb_blue,      drgb_blue},  // palette 1
+   {drgb_red,     drgb_blue,     drgb_blue,    drgb_blue,     drgb_red},  // palette 2
+   {drgb_red,     drgb_red,     drgb_red,     drgb_red,     drgb_green},  // palette 3
+   {drgb_bloodRed, drgb_rust,   drgb_ochre,   drgb_orangeYellow,  drgb_titaniumYellow},  // palette 4
+   {drbg_safetyOrange,    drgb_blueMunsell,    drgb_liberty,    drbg_skyBlue,      drbg_skyBlue},   // palette 5
+   {drgb_magneta,    drgb_mistyRose,    drgb_arcticLime,    drgb_sinopia,      drgb_darkSienna}   // palette 6
 };
 
 /*================================================
@@ -181,7 +203,10 @@ void setup()
     pixels.begin();
     Serial.println("STARTING CYLON NOW!");
     setupCylon();
+    Serial.print("colorGradientMode: ");
+    Serial.println(colorGradientMode);
     delay(1000);
+
 }
 
 
@@ -374,7 +399,7 @@ void checkButton(){
        colorGradientMode = 0;
      setupGradient(colorGradientMode);
      
-     Serial.print(" colorGradientMode: ");
+     Serial.print("colorGradientMode: ");
      Serial.println(colorGradientMode);
   }
   /* This is the older method for incrementing between the colorPalettes of bright, med, dim
@@ -413,17 +438,19 @@ void checkSpeed(){
 void setupGradient(int gradientMode){
 
   // define NUM_GRADIENT_COLORS is based on how many colors will be in gradient below
-  drgb_type start_color, mid_color1, mid_color2, end_color;
+  drgb_type start_color, mid_color1, mid_color2, mid_color3, end_color;
   
   start_color = gradient_palette[gradientMode].start_color;
   mid_color1 = gradient_palette[gradientMode].mid_color1;
   mid_color2 = gradient_palette[gradientMode].mid_color2;
+  mid_color3 = gradient_palette[gradientMode].mid_color3;
   end_color = gradient_palette[gradientMode].end_color;
 
  
-  makeGradient(cylon_gradient, (2 + GRADIENT_COLOR_SPACING), start_color, mid_color1);  // pixels 0 - 3
-  makeGradient(&(cylon_gradient[(1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color1, mid_color2); // pixels 3 - 6
-  makeGradient(&(cylon_gradient[2 * (1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color2, end_color); // pixels 6 - 9
+  makeGradient(cylon_gradient, (2 + GRADIENT_COLOR_SPACING), start_color, mid_color1);  
+  makeGradient(&(cylon_gradient[(1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color1, mid_color2); 
+  makeGradient(&(cylon_gradient[(1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color2, mid_color3); 
+  makeGradient(&(cylon_gradient[2 * (1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color3, end_color); 
   
   //printGradient(CYLONSIZE);
 }
