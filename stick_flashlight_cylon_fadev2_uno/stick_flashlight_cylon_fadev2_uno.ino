@@ -96,13 +96,14 @@ drgb_type drgb_blue={0,0,255};
 drgb_type drgb_green={0,255,0};
 drgb_type drgb_pink={200,0, 170};
 drgb_type drgb_black={0,0,0};
+drgb_type drgb_white={255,255,255};
 
 drgb_type drbg_skyBlue={101, 222, 241};
 drgb_type drbg_safetyOrange={249, 105, 0};
 drgb_type drgb_blueMunsell={6, 141, 157};
 drgb_type drgb_liberty={6, 141, 157};
 
-drgb_type drgb_magneta={211, 12, 123};
+drgb_type drgb_magenta={211, 12, 123};
 drgb_type drgb_mistyRose={255, 227, 220};
 drgb_type drgb_arcticLime={210, 255, 40};
 drgb_type drgb_sinopia={200, 76, 9};
@@ -129,11 +130,12 @@ gradient_palette_type gradient_palette[]=
 { //start_color,  mid_color1,   mid_color2,   mid_color3,     end_color
    {drgb_red,     drgb_pink,     drgb_green,   drgb_green,     drgb_green},  // palette 0
    {drgb_pink,    drgb_blue,   drgb_blue,      drgb_blue,      drgb_blue},  // palette 1
-   {drgb_red,     drgb_blue,     drgb_blue,    drgb_blue,     drgb_red},  // palette 2
-   {drgb_red,     drgb_red,     drgb_red,     drgb_red,     drgb_green},  // palette 3
+   {drgb_blue,     drgb_white,     drgb_white,    drgb_white,     drgb_white},  // palette 2
+   {drgb_green,     drgb_green,     drgb_orangeYellow,     drgb_orangeYellow,     drgb_orangeYellow},  // palette 3
    {drgb_bloodRed, drgb_rust,   drgb_ochre,   drgb_orangeYellow,  drgb_titaniumYellow},  // palette 4
    {drbg_safetyOrange,    drgb_blueMunsell,    drgb_liberty,    drbg_skyBlue,      drbg_skyBlue},   // palette 5
-   {drgb_magneta,    drgb_mistyRose,    drgb_arcticLime,    drgb_sinopia,      drgb_darkSienna}   // palette 6
+   {drgb_magenta,    drgb_mistyRose,    drgb_arcticLime,    drgb_sinopia,      drgb_darkSienna},   // palette 6
+   {drgb_magenta,   drgb_green,    drgb_arcticLime,    drgb_arcticLime,    drgb_arcticLime     },   // palette 7
 };
 
 /*================================================
