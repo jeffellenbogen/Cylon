@@ -244,21 +244,7 @@ void setupCylon(){
  * Uses the bool cylonMovingRight to determine which side of cylon is bright and which side is faded.
  * Slows the cylon at the edges of the array of leds.
  *===============================================*/ 
-void showLEDs(){
-  /*
-  cylon_palette_type palette;
-  
-  uint32_t cylon_color;
-  uint32_t cylon_color_med;
-  uint32_t cylon_color_dim;
-
-  // set our current cylon "palette" 
-  palette = cylon_palette[cylonColorMode];
-  cylon_color = palette.bright;
-  cylon_color_med = palette.med;
-  cylon_color_dim = palette.dim;
-  */
-  
+void showLEDs(){  
    // fills the cylon based on value of cylonMovingRight
    // need to improve the math and clean up code that determines what portion of the
    // cylon is full colr, medium, or dim
@@ -275,14 +261,6 @@ void showLEDs(){
             //fill the cylon from the start_color moving towards end_color. cylonCounter tracks how many pixels of cylon have been filled so far.
             pixels.setPixelColor(i, cylon_gradient[cylonCounter].red, cylon_gradient[cylonCounter].green, cylon_gradient[cylonCounter].blue);
             cylonCounter++;     
-            /* This is the old method for filling the cylon using set bright, med, dim colors for various parts of the cylon
-            if (cylonCounter == 1 )
-              pixels.setPixelColor(i,cylon_color);
-            else if (cylonCounter <= .4*CYLONSIZE)
-              pixels.setPixelColor(i,cylon_color_med);   
-            else
-               pixels.setPixelColor(i,cylon_color_dim); 
-             */
           }
           else
             pixels.setPixelColor(i,bgrd_color); 
@@ -297,21 +275,11 @@ void showLEDs(){
           {
              pixels.setPixelColor(i, cylon_gradient[cylonCounter].red, cylon_gradient[cylonCounter].green, cylon_gradient[cylonCounter].blue);
              cylonCounter++;           
-            /*
-            
-            if (cylonCounter == 1)
-              pixels.setPixelColor(i,cylon_color);
-            else if (cylonCounter <= .4*CYLONSIZE)
-              pixels.setPixelColor(i,cylon_color_med);   
-            else
-               pixels.setPixelColor(i,cylon_color_dim); 
-             */
           }
           
           else
             pixels.setPixelColor(i,bgrd_color); 
-       }
-    
+       } 
    }
    pixels.show();    
 }
@@ -451,8 +419,7 @@ void setupGradient(int gradientMode){
   makeGradient(&(cylon_gradient[(1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color1, mid_color2); 
   makeGradient(&(cylon_gradient[2 * (1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color2, mid_color3); 
   makeGradient(&(cylon_gradient[3 * (1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color3, end_color); 
-  
-  //printGradient(CYLONSIZE);
+
 }
 
 /*================================================
