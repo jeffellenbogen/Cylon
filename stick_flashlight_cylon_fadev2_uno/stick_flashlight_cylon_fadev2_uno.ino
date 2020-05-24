@@ -18,7 +18,7 @@
 
 // changing the number of colors requires a lot of other changes, ie: create new mid_colors throughout the programa
 #define NUM_GRADIENT_COLORS 5  
-#define GRADIENT_COLOR_SPACING 4
+#define GRADIENT_COLOR_SPACING 3
 
 #define CYLONSIZE (NUM_GRADIENT_COLORS + GRADIENT_COLOR_SPACING * (NUM_GRADIENT_COLORS - 1))
 #define SIDEBUFFERSIZE (CYLONSIZE-1)
