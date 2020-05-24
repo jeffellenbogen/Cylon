@@ -417,8 +417,9 @@ void setupGradient(int gradientMode){
  
   makeGradient(cylon_gradient, (2 + GRADIENT_COLOR_SPACING), start_color, mid_color1);  
   makeGradient(&(cylon_gradient[(1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color1, mid_color2); 
-  makeGradient(&(cylon_gradient[(1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color2, mid_color3); 
-  makeGradient(&(cylon_gradient[2 * (1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color3, end_color); 
+  makeGradient(&(cylon_gradient[2 * (1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color2, mid_color3); 
+  makeGradient(&(cylon_gradient[3 * (1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color3, end_color); 
+
 }
 
 /*================================================
