@@ -18,7 +18,7 @@
 
 // changing the number of colors requires a lot of other changes, ie: create new mid_colors throughout the programa
 #define NUM_GRADIENT_COLORS 5  
-#define GRADIENT_COLOR_SPACING 3
+#define GRADIENT_COLOR_SPACING 10
 
 #define CYLONSIZE (NUM_GRADIENT_COLORS + GRADIENT_COLOR_SPACING * (NUM_GRADIENT_COLORS - 1))
 #define SIDEBUFFERSIZE (CYLONSIZE-1)
@@ -36,7 +36,7 @@ typedef enum
 cylon_state_type pixelState[FULLARRAYSIZE];
 
 #define CYLON_MIN_DELAY 0
-#define CYLON_MAX_DELAY 50
+#define CYLON_MAX_DELAY 40
 int cylonDelay;
 
 int cylonIndex = 0;
