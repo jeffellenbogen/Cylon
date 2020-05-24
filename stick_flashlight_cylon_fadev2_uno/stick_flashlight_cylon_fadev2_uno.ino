@@ -18,7 +18,7 @@
 
 // changing the number of colors requires a lot of other changes, ie: create new mid_colors throughout the programa
 #define NUM_GRADIENT_COLORS 5  
-#define GRADIENT_COLOR_SPACING 10
+#define GRADIENT_COLOR_SPACING 4
 
 #define CYLONSIZE (NUM_GRADIENT_COLORS + GRADIENT_COLOR_SPACING * (NUM_GRADIENT_COLORS - 1))
 #define SIDEBUFFERSIZE (CYLONSIZE-1)
@@ -449,8 +449,8 @@ void setupGradient(int gradientMode){
  
   makeGradient(cylon_gradient, (2 + GRADIENT_COLOR_SPACING), start_color, mid_color1);  
   makeGradient(&(cylon_gradient[(1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color1, mid_color2); 
-  makeGradient(&(cylon_gradient[(1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color2, mid_color3); 
-  makeGradient(&(cylon_gradient[2 * (1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color3, end_color); 
+  makeGradient(&(cylon_gradient[2 * (1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color2, mid_color3); 
+  makeGradient(&(cylon_gradient[3 * (1+GRADIENT_COLOR_SPACING)]), (2 + GRADIENT_COLOR_SPACING), mid_color3, end_color); 
   
   //printGradient(CYLONSIZE);
 }
