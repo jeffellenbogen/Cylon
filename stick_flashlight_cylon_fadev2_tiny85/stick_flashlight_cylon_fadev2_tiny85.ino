@@ -30,6 +30,15 @@ typedef enum
 
 cylon_state_type pixelState[FULLARRAYSIZE];
 
+typedef enum
+{
+  NO_PRESS, // not pressed
+  QUICK_PRESS, // under 250 ms
+  MEDIUM_PRESS, // range between 250 ms and 3 sec
+  LONG_PRESS // press over 3 seconds
+} press_type;
+
+
 #define CYLON_MIN_DELAY 10
 #define CYLON_MAX_DELAY 200
 int cylonDelay;
@@ -126,10 +135,13 @@ cylon_palette_type cylon_palette[]=
  * amount of time.
  *===============================================*/ 
 
-#define DEBOUNCE_TIME_MS 50
-bool buttonPressed( void )
+#define QUICK_PRESS_MS 50 //under 50 ms is a bounce and should be ignored.
+#define MEDIUM_PRESS_MS 250
+#define LONG_PRESS_MS 3000
+
+press_type buttonPressed( void )
 {
-  static int last_state=HIGH;
+  static int last_state=HIGH; // input-pullup pinMode so HIGH = not pressed, LOW = pressed
   int current_state;
   static unsigned long down_start_time=0;
   unsigned long current_time;
@@ -141,36 +153,46 @@ bool buttonPressed( void )
   {
     if (current_state == LOW)
     {
-      last_state = current_state;
+      last_state = LOW;
       down_start_time = millis();
     }
 
-    return(false);
+    return(NO_PRESS);
   }
   
-  else
+  else  //last state was low (button pressed down)
   {
     /* look for the release with "enough time" to count a button press. */
-    if (current_state == HIGH)
+    if (current_state == HIGH)  // was low and is now high, so button was released
     {
       /* button went from low to high.  Was it down long enough? */
       current_time = millis();
-      if (current_time - down_start_time > DEBOUNCE_TIME_MS)
+      if (current_time - down_start_time > LONG_PRESS_MS)
       {
-        last_state = current_state;
-        return(true);
+        last_state = HIGH;
+        return(LONG_PRESS);
       }
-      else
+      else if (current_time - down_start_time > MEDIUM_PRESS_MS)
+      {
+        last_state = HIGH;
+        return(MEDIUM_PRESS);
+      }
+      if (current_time - down_start_time > QUICK_PRESS_MS)
+      {
+        last_state = HIGH;
+        return(QUICK_PRESS);
+      }
+      else  //too fast, not a real press
       {
         /* went up too quick...this is a bounce.  */
-        last_state = current_state;
-        return(false);
+        last_state = HIGH;
+        return(NO_PRESS);
       }
     }
     else
     {
       /* We're still "low".  Waiting for release.  */
-      return(false);
+      return(NO_PRESS);
     }
   }  
 }
@@ -369,11 +391,20 @@ void moveLEDs(){
  * 
  *===============================================*/ 
 void checkButton(){
-  if (buttonPressed())
-  {
+  press_type currentButtonState;
+  currentButtonState=buttonPressed();
+  if (currentButtonState==QUICK_PRESS)
+    colorGradientMode = 2;
+  else if (currentButtonState==MEDIUM_PRESS)
+    colorGradientMode = 3; 
+  else if (currentButtonState==LONG_PRESS)
+    colorGradientMode = 5;    
+  
+  /* 
      colorGradientMode++;
      if (colorGradientMode > 5)
        colorGradientMode = 1;
+  */
      setupGradient(colorGradientMode);
      makeGradient(CYLONSIZE);
      
@@ -383,7 +414,7 @@ void checkButton(){
      Serial.println(colorGradientMode);
      printGradient(CYLONSIZE);
     #endif  
-  }
+  
   /* This is the older method for incrementing between the colorPalettes of bright, med, dim
   {
      cylonColorMode++;
